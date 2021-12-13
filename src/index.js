@@ -151,7 +151,7 @@ const movKey = new Map([
     ['ShiftLeft', false]
 ]);
 function updateControls(delta) {
-    const movSpeed = 10 * delta;
+    const movSpeed = 16 * delta;
     if (movKey.get('KeyW')) {
         pointerLockControls.moveForward(movSpeed);
     }
