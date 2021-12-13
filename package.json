@@ -1,0 +1,15 @@
+{
+  "name": "voxel-editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.135.0",
+    "webpack": "^5.65.0"
+  }
+}
