@@ -110,8 +110,8 @@ class World {
         const { chunkSize } = this;
 
         //BufferAttribute for BufferGeometry
-        const positions = []; // 정점 (꼭짓점) 위치
-        const normals = []; // 법선 => 면이 바라보는 방향(벡터)
+        const positions = []; // 정점 (꼭짓점) 위치 데이터
+        const normals = []; // 법선 => 면이 바라보는 방향(벡터) 데이터
         const index = []; // 정점 좌표 배열
 
         // chunk의 시작 좌표
