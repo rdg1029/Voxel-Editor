@@ -5,7 +5,8 @@ class World {
     constructor(chunkSize) {
         this.chunkSize = chunkSize;
         this.chunkSliceSize = chunkSize * chunkSize;
-        this.chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
+        // this.chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
+        this.chunks = {};
         this.faces = [
             { //left
                 dir: [-1, 0, 0],
@@ -64,14 +65,15 @@ class World {
             },
         ]
     }
-    getChunkForVoxel(x, y, z) {
+    computeChunkId(x, y, z) {
         const { chunkSize } = this;
         const chunkX = Math.floor(x / chunkSize);
         const chunkY = Math.floor(y / chunkSize);
         const chunkZ = Math.floor(z / chunkSize);
-        // chunk (0, 0, 0)만 허용
-        if (chunkX !== 0 || chunkY !== 0 || chunkZ !== 0) return null;
-        return this.chunk;
+        return `${chunkX},${chunkY},${chunkZ}`;
+    }
+    getChunkForVoxel(x, y, z) {
+        return this.chunks[this.computeChunkId(x, y, z)];
     }
     computeVoxelOffset(x, y, z) {
         const { chunkSize, chunkSliceSize } = this;
@@ -98,7 +100,7 @@ class World {
         //BufferAttribute for BufferGeometry
         const positions = []; // 정점 (꼭짓점) 위치
         const normals = []; // 법선 => 면이 바라보는 방향(벡터)
-        const index = []; // 정점, 법선을 합친 배열 데이터(?)
+        const index = []; // 정점 좌표 배열
 
         // chunk의 시작 좌표
         const startX = chunkX * chunkSize;
