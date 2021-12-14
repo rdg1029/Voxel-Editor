@@ -83,10 +83,22 @@ class World {
         return voxelY * chunkSliceSize + voxelZ * chunkSize + voxelX;
     }
     setVoxel(x, y, z, v) {
-        const chunk = this.getChunkForVoxel(x, y, z);
-        if (!chunk) return;
+        let chunk = this.getChunkForVoxel(x, y, z);
+        if (!chunk) {
+            chunk = this.addChunkForVoxel(x, y, z);
+        }
         const voxelOffset = this.computeVoxelOffset(x, y, z);
         chunk[voxelOffset] = v;
+    }
+    addChunkForVoxel(x, y, z) {
+        const chunkId = this.computeChunkId(x, y, z);
+        let chunk = this.chunks[chunkId];
+        if (!chunk) {
+            const { chunkSize } = this;
+            chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
+            this.chunks[chunkId] = chunk;
+        }
+        return chunk;
     }
     getVoxel(x, y, z) {
         const chunk = this.getChunkForVoxel(x, y, z);
