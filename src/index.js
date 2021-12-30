@@ -197,6 +197,13 @@ window.addEventListener('keyup', e => {
     if (!movKey.has(e.code)) return;
     movKey.set(e.code, false);
 });
+window.addEventListener('resize', () => { 
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width, height, true);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+});
 
 // Set World
 const CHUNK_SIZE = 32;
