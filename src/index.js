@@ -233,7 +233,9 @@ geometry.setAttribute(
 geometry.setIndex(index);
 
 const voxelMesh = new THREE.Mesh(geometry, material);
-scene.add(voxelMesh);
+const wireFrame = new THREE.WireframeGeometry(geometry);
+const line = new THREE.LineSegments(wireFrame);
+scene.add(voxelMesh, line);
 
 const crossHairPos = new THREE.Vector2(0, 0);
 const raycaster = new THREE.Raycaster();
