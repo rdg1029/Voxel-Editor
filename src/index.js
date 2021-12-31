@@ -235,6 +235,19 @@ geometry.setIndex(index);
 const voxelMesh = new THREE.Mesh(geometry, material);
 scene.add(voxelMesh);
 
+const crossHairPos = new THREE.Vector2(0, 0);
+const raycaster = new THREE.Raycaster();
+raycaster.far = 8;
+
+function placeVoxel(event) {
+    raycaster.setFromCamera(crossHairPos, camera);
+    const intersect = raycaster.intersectObject(voxelMesh, false);
+    if (intersect[0]) {
+        console.log(intersect[0].point.floor(), intersect[0].face.normal);
+    }
+}
+window.addEventListener('pointerdown', placeVoxel);
+
 renderer.setAnimationLoop(() => {
     const delta = clock.getDelta();
     updateControls(delta);
