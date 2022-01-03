@@ -245,7 +245,12 @@ function placeVoxel(event) {
     raycaster.setFromCamera(crossHairPos, camera);
     const intersect = raycaster.intersectObject(voxelMesh, false);
     if (intersect[0]) {
-        console.log(intersect[0].point.floor(), intersect[0].face.normal);
+        const selectPos = intersect[0].point.floor().clone();
+        const normal = intersect[0].face.normal;
+        if (normal.x === -1 || normal.y === -1 || normal.z === -1) {
+            selectPos.add(normal);
+        }
+        console.log(selectPos);
     }
 }
 window.addEventListener('pointerdown', placeVoxel);
