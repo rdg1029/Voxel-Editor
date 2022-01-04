@@ -246,15 +246,19 @@ const crossHairPos = new THREE.Vector2(0, 0);
 const raycaster = new THREE.Raycaster();
 raycaster.far = 8;
 
+function getSelectPos(intersect) {
+    const selectPos = intersect.point.floor().clone();
+    const normal = intersect.face.normal;
+    if (normal.x === -1 || normal.y === -1 || normal.z === -1) {
+        selectPos.add(normal);
+    }
+    return selectPos;
+}
 function placeVoxel(event) {
     raycaster.setFromCamera(crossHairPos, camera);
     const intersect = raycaster.intersectObject(voxelMesh, false);
     if (intersect[0]) {
-        const selectPos = intersect[0].point.floor().clone();
-        const normal = intersect[0].face.normal;
-        if (normal.x === -1 || normal.y === -1 || normal.z === -1) {
-            selectPos.add(normal);
-        }
+        const selectPos = getSelectPos(intersect[0]);
         console.log(selectPos);
     }
 }
