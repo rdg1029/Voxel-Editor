@@ -240,6 +240,7 @@ scene.add(voxelMesh, line);
 // Define voxel helper
 const voxelHelperGeometry = new THREE.BufferGeometry();
 const voxelHelperMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
+const voxelHelperMesh = new THREE.Mesh(voxelHelperGeometry, voxelHelperMaterial);
 
 // Set crosshair & raycaster
 const crossHairPos = new THREE.Vector2(0, 0);
@@ -254,6 +255,33 @@ function getSelectPos(intersect) {
     }
     return selectPos;
 }
+function selectVoxel() {
+    let pos = [], norm = [], idx = [];
+    raycaster.setFromCamera(crossHairPos, camera);
+    const intersect = raycaster.intersectObject(voxelMesh, false);
+    if (intersect[0]) {
+        const selectPos = getSelectPos(intersect[0]);
+        const normal = intersect[0].face.normal;
+        for (const {dir, corners} of world.faces) {
+            const selectedDir = new THREE.Vector3(...dir);
+            if(normal.equals(selectedDir)) {
+                for (const corner of corners) {
+                    pos.push(corner[0] + selectPos.x, corner[1] + selectPos.y, corner[2] + selectPos.z);
+                    norm.push(...selectedDir);
+                }
+                idx.push(0, 1, 2, 2, 1, 3);
+                break;
+            }
+        }
+        voxelHelperGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+        voxelHelperGeometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(norm), 3));
+        voxelHelperGeometry.setIndex(idx);
+        scene.add(voxelHelperMesh);
+    }
+    else {
+        scene.remove(voxelHelperMesh);
+    }
+}
 function placeVoxel(event) {
     raycaster.setFromCamera(crossHairPos, camera);
     const intersect = raycaster.intersectObject(voxelMesh, false);
@@ -263,6 +291,7 @@ function placeVoxel(event) {
     }
 }
 window.addEventListener('pointerdown', placeVoxel);
+pointerLockControls.addEventListener('change', selectVoxel);
 
 renderer.setAnimationLoop(() => {
     const delta = clock.getDelta();
