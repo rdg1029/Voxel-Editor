@@ -237,6 +237,11 @@ const wireFrame = new THREE.WireframeGeometry(geometry);
 const line = new THREE.LineSegments(wireFrame);
 scene.add(voxelMesh, line);
 
+// Define voxel helper
+const voxelHelperGeometry = new THREE.BufferGeometry();
+const voxelHelperMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
+
+// Set crosshair & raycaster
 const crossHairPos = new THREE.Vector2(0, 0);
 const raycaster = new THREE.Raycaster();
 raycaster.far = 8;
