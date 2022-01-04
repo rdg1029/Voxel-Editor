@@ -262,6 +262,7 @@ function selectVoxel() {
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
         const normal = intersect[0].face.normal;
+        selectPos.sub(normal);
         for (const {dir, corners} of world.faces) {
             const selectedDir = new THREE.Vector3(...dir);
             if(normal.equals(selectedDir)) {
