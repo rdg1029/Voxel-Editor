@@ -245,7 +245,6 @@ const voxelHelperMesh = new THREE.Mesh(voxelHelperGeometry, voxelHelperMaterial)
 // Set crosshair & raycaster
 const crossHairPos = new THREE.Vector2(0, 0);
 const raycaster = new THREE.Raycaster();
-raycaster.far = 8;
 
 function getSelectPos(intersect) {
     const selectPos = intersect.point.floor().clone();
@@ -256,7 +255,7 @@ function getSelectPos(intersect) {
     return selectPos;
 }
 function selectVoxel() {
-    let pos = [], norm = [], idx = [];
+    let pos = [], norm = [];
     raycaster.setFromCamera(crossHairPos, camera);
     const intersect = raycaster.intersectObject(voxelMesh, false);
     if (intersect[0]) {
@@ -270,13 +269,12 @@ function selectVoxel() {
                     pos.push(corner[0] + selectPos.x, corner[1] + selectPos.y, corner[2] + selectPos.z);
                     norm.push(...selectedDir);
                 }
-                idx.push(0, 1, 2, 2, 1, 3);
                 break;
             }
         }
         voxelHelperGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
         voxelHelperGeometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(norm), 3));
-        voxelHelperGeometry.setIndex(idx);
+        voxelHelperGeometry.setIndex([0, 1, 2, 2, 1, 3]);
         scene.add(voxelHelperMesh);
     }
     else {
