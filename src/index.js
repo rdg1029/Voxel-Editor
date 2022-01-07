@@ -238,7 +238,7 @@ const line = new THREE.LineSegments(wireFrame);
 scene.add(voxelMesh, line);
 
 // Define voxel helper
-const voxelHelperGeometry = new THREE.BufferGeometry();
+const voxelHelperGeometry = new THREE.BoxGeometry(1, 1, 1);
 const voxelHelperMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
 const voxelHelperMesh = new THREE.Mesh(voxelHelperGeometry, voxelHelperMaterial);
 
@@ -255,26 +255,11 @@ function getSelectPos(intersect) {
     return selectPos;
 }
 function selectVoxel() {
-    let pos = [], norm = [];
     raycaster.setFromCamera(crossHairPos, camera);
     const intersect = raycaster.intersectObject(voxelMesh, false);
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
-        const normal = intersect[0].face.normal;
-        selectPos.sub(normal);
-        for (const {dir, corners} of world.faces) {
-            const selectedDir = new THREE.Vector3(...dir);
-            if(normal.equals(selectedDir)) {
-                for (const corner of corners) {
-                    pos.push(corner[0] + selectPos.x, corner[1] + selectPos.y, corner[2] + selectPos.z);
-                    norm.push(...selectedDir);
-                }
-                break;
-            }
-        }
-        voxelHelperGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
-        voxelHelperGeometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(norm), 3));
-        voxelHelperGeometry.setIndex([0, 1, 2, 2, 1, 3]);
+        voxelHelperMesh.position.set(selectPos.x + .5, selectPos.y + .5, selectPos.z + .5);
         scene.add(voxelHelperMesh);
     }
     else {
