@@ -205,40 +205,10 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
 });
 
-// Set World
-const CHUNK_SIZE = 32;
-const world = new World(CHUNK_SIZE);
-
-for (let z = 0; z < CHUNK_SIZE; z++) {
-    for (let x = 0; x < CHUNK_SIZE; x++) {
-        world.setVoxel(x, 0, z, 1);
-    }
-}
-
-const { positions, normals, index } = world.generateGeometryData(0, 0, 0);
-const geometry = new THREE.BufferGeometry();
+// Define voxel material
 const material = new THREE.MeshBasicMaterial({color: 'green'});
 
-const positionNumComponents = 3;
-const normalNumComponents = 3;
-
-geometry.setAttribute(
-    'position',
-    new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents)
-);
-geometry.setAttribute(
-    'normal',
-    new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents)
-);
-geometry.setIndex(index);
-
-const voxelMesh = new THREE.Mesh(geometry, material);
-const wireFrame = new THREE.WireframeGeometry(geometry);
-const line = new THREE.LineSegments(wireFrame);
-scene.add(voxelMesh, line);
-
-// Update voxel & chunk
-const neihborOffsets = [
+const neighborOffsets = [
     [0, 0, 0], // 자신
     [-1, 0, 0], // 왼쪽
     [1, 0, 0], // 오른쪽
@@ -246,10 +216,13 @@ const neihborOffsets = [
     [0, 1, 0], // 위
     [0, 0, -1], // 뒤
     [0, 0, 1], // 앞
-  ];
+];
+const chunkIdToMesh = new Map();
+
+// Update voxel & chunk functions
 function updateVoxelGeometry(x, y, z) {
     const updatedChunkIds = new Map();
-    neihborOffsets.forEach(offset => {
+    neighborOffsets.forEach(offset => {
         const offsetX = x + offset[0];
         const offsetY = y + offset[1];
         const offsetZ = z + offset[2];
@@ -260,7 +233,6 @@ function updateVoxelGeometry(x, y, z) {
         }
     });
 }
-const chunkIdToMesh = new Map();
 function updateChunkGeometry(x, y, z) {
     const chunkX = Math.floor(x / CHUNK_SIZE);
     const chunkY = Math.floor(y / CHUNK_SIZE);
@@ -289,6 +261,9 @@ function updateChunkGeometry(x, y, z) {
         scene.add(mesh);
         mesh.position.set(chunkX * CHUNK_SIZE, chunkY * CHUNK_SIZE, chunkZ * CHUNK_SIZE);
     }
+    const wireFrame = new THREE.WireframeGeometry(geometry);
+    const line = new THREE.LineSegments(wireFrame);
+    scene.add(line);
 }
 // Define voxel helper
 const voxelHelperGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -309,7 +284,7 @@ function getSelectPos(intersect) {
 }
 function selectVoxel() {
     raycaster.setFromCamera(crossHairPos, camera);
-    const intersect = raycaster.intersectObject(voxelMesh, false);
+    const intersect = raycaster.intersectObjects(Array.from(chunkIdToMesh.values()), false);
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
         voxelHelperMesh.position.set(selectPos.x + .5, selectPos.y + .5, selectPos.z + .5);
@@ -319,9 +294,9 @@ function selectVoxel() {
         scene.remove(voxelHelperMesh);
     }
 }
-function placeVoxel(event) {
+function placeVoxel() {
     raycaster.setFromCamera(crossHairPos, camera);
-    const intersect = raycaster.intersectObject(voxelMesh, false);
+    const intersect = raycaster.intersectObjects(Array.from(chunkIdToMesh.values()), false);
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
         // console.log(selectPos);
@@ -331,6 +306,17 @@ function placeVoxel(event) {
 }
 window.addEventListener('pointerdown', placeVoxel);
 pointerLockControls.addEventListener('change', selectVoxel);
+
+// Set World
+const CHUNK_SIZE = 32;
+const world = new World(CHUNK_SIZE);
+
+for (let z = 0; z < CHUNK_SIZE; z++) {
+    for (let x = 0; x < CHUNK_SIZE; x++) {
+        world.setVoxel(x, 0, z, 1);
+    }
+}
+updateChunkGeometry(0, 0, 0);
 
 renderer.setAnimationLoop(() => {
     const delta = clock.getDelta();
