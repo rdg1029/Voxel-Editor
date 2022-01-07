@@ -256,9 +256,39 @@ function updateVoxelGeometry(x, y, z) {
         const chunkId = world.computeChunkId(offsetX, offsetY, offsetZ);
         if (!updatedChunkIds.get(chunkId)) {
             updatedChunkIds.set(chunkId, true);
-            // updateChunkGeometry(offsetX, offsetY, offsetZ);
+            updateChunkGeometry(offsetX, offsetY, offsetZ);
         }
     });
+}
+const chunkIdToMesh = new Map();
+function updateChunkGeometry(x, y, z) {
+    const chunkX = Math.floor(x / CHUNK_SIZE);
+    const chunkY = Math.floor(y / CHUNK_SIZE);
+    const chunkZ = Math.floor(z / CHUNK_SIZE);
+    const chunkId = world.computeChunkId(x, y, z);
+    let mesh = chunkIdToMesh.get(chunkId);
+    const geometry = mesh ? mesh.geometry : new THREE.BufferGeometry();
+
+    const { positions, normals, index } = world.generateGeometryData(chunkX, chunkY, chunkZ);
+    const positionNumComponents = 3;
+    const normalNumComponents = 3;
+    geometry.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents)
+    );
+    geometry.setAttribute(
+        'normal',
+        new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents)
+    );
+    geometry.setIndex(index);
+
+    if (!mesh) {
+        mesh = new THREE.Mesh(geometry, material);
+        mesh.name = chunkId;
+        chunkIdToMesh.set(chunkId, mesh);
+        scene.add(mesh);
+        mesh.position.set(chunkX * CHUNK_SIZE, chunkY * CHUNK_SIZE, chunkZ * CHUNK_SIZE);
+    }
 }
 // Define voxel helper
 const voxelHelperGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -294,7 +324,9 @@ function placeVoxel(event) {
     const intersect = raycaster.intersectObject(voxelMesh, false);
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
-        console.log(selectPos);
+        // console.log(selectPos);
+        world.setVoxel(selectPos.x, selectPos.y, selectPos.z, 1);
+        updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
     }
 }
 window.addEventListener('pointerdown', placeVoxel);
