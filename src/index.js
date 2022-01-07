@@ -237,6 +237,29 @@ const wireFrame = new THREE.WireframeGeometry(geometry);
 const line = new THREE.LineSegments(wireFrame);
 scene.add(voxelMesh, line);
 
+// Update voxel & chunk
+const neihborOffsets = [
+    [0, 0, 0], // 자신
+    [-1, 0, 0], // 왼쪽
+    [1, 0, 0], // 오른쪽
+    [0, -1, 0], // 아래
+    [0, 1, 0], // 위
+    [0, 0, -1], // 뒤
+    [0, 0, 1], // 앞
+  ];
+function updateVoxelGeometry(x, y, z) {
+    const updatedChunkIds = new Map();
+    neihborOffsets.forEach(offset => {
+        const offsetX = x + offset[0];
+        const offsetY = y + offset[1];
+        const offsetZ = z + offset[2];
+        const chunkId = world.computeChunkId(offsetX, offsetY, offsetZ);
+        if (!updatedChunkIds.get(chunkId)) {
+            updatedChunkIds.set(chunkId, true);
+            // updateChunkGeometry(offsetX, offsetY, offsetZ);
+        }
+    });
+}
 // Define voxel helper
 const voxelHelperGeometry = new THREE.BoxGeometry(1, 1, 1);
 const voxelHelperMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
