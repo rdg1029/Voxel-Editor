@@ -253,6 +253,10 @@ function updateChunkGeometry(x, y, z) {
         new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents)
     );
     geometry.setIndex(index);
+    // position 같은 데이터 수치를 변경했을때는, bounding volumes를 재계산하여
+    // raycaster와 voxel helper가 변경된 오브젝트를 인식할 수 있게 함.
+    // https://threejs.org/docs/#manual/ko/introduction/How-to-update-things
+    geometry.computeBoundingSphere();
 
     if (!mesh) {
         mesh = new THREE.Mesh(geometry, material);
