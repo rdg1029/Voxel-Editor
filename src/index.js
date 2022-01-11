@@ -292,9 +292,12 @@ function getSelectPos(intersect) {
     });
     return selectPos;
 }
-function selectVoxel() {
+function getIntersects() {
     raycaster.setFromCamera(crossHairPos, camera);
-    const intersect = raycaster.intersectObjects(Array.from(chunkIdToMesh.values()), false);
+    return raycaster.intersectObjects(Array.from(chunkIdToMesh.values()), false);
+}
+function selectVoxel() {
+    const intersect = getIntersects();
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
         voxelHelperMesh.position.set(selectPos.x + .5, selectPos.y + .5, selectPos.z + .5);
@@ -305,8 +308,7 @@ function selectVoxel() {
     }
 }
 function placeVoxel() {
-    raycaster.setFromCamera(crossHairPos, camera);
-    const intersect = raycaster.intersectObjects(Array.from(chunkIdToMesh.values()), false);
+    const intersect = getIntersects();
     if (intersect[0]) {
         const selectPos = getSelectPos(intersect[0]);
         // console.log(selectPos);
