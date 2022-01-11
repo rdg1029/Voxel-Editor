@@ -308,8 +308,14 @@ function placeVoxel() {
         updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
     }
 }
-window.addEventListener('pointerdown', placeVoxel);
-pointerLockControls.addEventListener('change', selectVoxel);
+pointerLockControls.addEventListener('lock', () => {
+    window.addEventListener('pointerdown', placeVoxel);
+    pointerLockControls.addEventListener('change', selectVoxel);
+});
+pointerLockControls.addEventListener('unlock', () => {
+    window.removeEventListener('pointerdown', placeVoxel);
+    pointerLockControls.removeEventListener('change', selectVoxel);
+});
 
 // Set World
 const CHUNK_SIZE = 32;
