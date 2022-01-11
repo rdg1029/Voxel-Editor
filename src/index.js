@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { VertexColors } from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 
 class World {
@@ -112,6 +113,7 @@ class World {
         //BufferAttribute for BufferGeometry
         const positions = []; // 정점 (꼭짓점) 위치 데이터
         const normals = []; // 법선 => 면이 바라보는 방향(벡터) 데이터
+        const colors = []; // 색 데이터 (r, g, b)
         const index = []; // 정점 좌표 배열
 
         // chunk의 시작 좌표
@@ -135,6 +137,7 @@ class World {
                                 for (const pos of corners) {
                                     positions.push(pos[0] + x, pos[1] + y, pos[2] + z);
                                     normals.push(...dir);
+                                    colors.push(0, 255, 0);
                                 }
                                 index.push(ndx, ndx + 1, ndx + 2, ndx + 2, ndx + 1, ndx + 3);
                             }
@@ -143,7 +146,7 @@ class World {
                 }
             }
         }
-        return {positions, normals, index};
+        return {positions, normals, colors, index};
     }
 }
 
@@ -206,7 +209,7 @@ window.addEventListener('resize', () => {
 });
 
 // Define voxel material
-const material = new THREE.MeshBasicMaterial({color: 'green'});
+const material = new THREE.MeshBasicMaterial({vertexColors: THREE.VertexColors});
 
 const neighborOffsets = [
     [0, 0, 0], // 자신
@@ -241,9 +244,10 @@ function updateChunkGeometry(x, y, z) {
     let mesh = chunkIdToMesh.get(chunkId);
     const geometry = mesh ? mesh.geometry : new THREE.BufferGeometry();
 
-    const { positions, normals, index } = world.generateGeometryData(chunkX, chunkY, chunkZ);
+    const { positions, normals, colors, index } = world.generateGeometryData(chunkX, chunkY, chunkZ);
     const positionNumComponents = 3;
     const normalNumComponents = 3;
+    const colorNumComponents = 3;
     geometry.setAttribute(
         'position',
         new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents)
@@ -251,6 +255,10 @@ function updateChunkGeometry(x, y, z) {
     geometry.setAttribute(
         'normal',
         new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents)
+    );
+    geometry.setAttribute(
+        'color',
+        new THREE.BufferAttribute(new Float32Array(colors), colorNumComponents)
     );
     geometry.setIndex(index);
     // position 같은 데이터 수치를 변경했을때는, bounding volumes를 재계산하여
