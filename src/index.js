@@ -279,11 +279,17 @@ const crossHairPos = new THREE.Vector2(0, 0);
 const raycaster = new THREE.Raycaster();
 
 function getSelectPos(intersect) {
-    const selectPos = intersect.point.floor().clone();
+    const selectPos = intersect.point.clone();
     const normal = intersect.face.normal;
-    if (normal.x === -1 || normal.y === -1 || normal.z === -1) {
-        selectPos.add(normal);
-    }
+    Object.values(normal).forEach((n, idx) => {
+        if (n !== 0) {
+            const pos = selectPos.getComponent(idx);
+            selectPos.setComponent(idx, Math.round(pos));
+            selectPos.floor();
+            if (n === -1) selectPos.add(normal);
+            return;
+        }
+    });
     return selectPos;
 }
 function selectVoxel() {
