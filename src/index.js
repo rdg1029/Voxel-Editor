@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { VertexColors } from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 
 class World {
@@ -189,7 +188,7 @@ function updateControls(delta) {
     }
 }
 
-document.body.addEventListener('click', () => {
+renderer.domElement.addEventListener('click', () => {
     pointerLockControls.lock();
 });
 window.addEventListener('keydown', e => {

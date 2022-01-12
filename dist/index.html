@@ -9,6 +9,17 @@
 <body>
     <script src="main.js"></script>
     <img src="./crosshair.svg" />
+    <span id="palette">
+        <input type="color" id="c1" value="#ffffff">
+        <input type="color" id="c2" value="#ffffff">
+        <input type="color" id="c3" value="#ffffff">
+        <input type="color" id="c4" value="#ffffff">
+        <input type="color" id="c5" value="#ffffff">
+        <input type="color" id="c6" value="#ffffff">
+        <input type="color" id="c7" value="#ffffff">
+        <input type="color" id="c8" value="#ffffff">
+        <input type="color" id="c9" value="#ffffff">
+    </span>
 </body>
 <style>
     body {
@@ -27,6 +38,10 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+    }
+    #palette {
+        position: absolute;
+        margin-top: 1em;
     }
 </style>
 </html>
