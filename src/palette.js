@@ -17,8 +17,6 @@ class Palette {
         for (let i = 1; i < 65; i++) {
             const color = document.createElement('span');
             color.style.backgroundColor = voxelData[i];
-            color.style.width = '1em';
-            color.style.height = '1em';
             this.colorBoard.appendChild(color);
             if (i % 8 === 0) {
                 this.colorBoard.appendChild(document.createElement('br'));
