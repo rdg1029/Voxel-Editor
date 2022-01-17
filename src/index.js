@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import { Palette } from './palette';
 
 class World {
     constructor(chunkSize) {
@@ -335,7 +336,7 @@ pointerLockControls.addEventListener('unlock', () => {
 // Set World
 const CHUNK_SIZE = 32;
 const world = new World(CHUNK_SIZE);
-
+    
 for (let z = 0; z < CHUNK_SIZE; z++) {
     for (let x = 0; x < CHUNK_SIZE; x++) {
         world.setVoxel(x, 0, z, 1);
@@ -343,8 +344,14 @@ for (let z = 0; z < CHUNK_SIZE; z++) {
 }
 updateChunkGeometry(0, 0, 0);
 
-renderer.setAnimationLoop(() => {
-    const delta = clock.getDelta();
-    updateControls(delta);
-    renderer.render(scene, camera);
-});
+function init() {
+    //Set Palette
+    const palette = new Palette();
+
+    renderer.setAnimationLoop(() => {
+        const delta = clock.getDelta();
+        updateControls(delta);
+        renderer.render(scene, camera);
+    });
+}
+window.onload = init;
