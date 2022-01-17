@@ -10,14 +10,14 @@
     <script src="main.js"></script>
     <img src="./crosshair.svg" />
     <div id="palette">
-        <span id="c1">1</span>
-        <span id="c2">2</span>
-        <span id="c3">3</span>
-        <span id="c4">4</span>
-        <span id="c5">5</span>
-        <span id="c6">6</span>
-        <span id="c7">7</span>
-        <span id="c8">8</span>
+        <span id="c1" style="background-color: #ff0040;">1</span>
+        <span id="c2" style="background-color: #ed7614;">2</span>
+        <span id="c3" style="background-color: #ffc825;">3</span>
+        <span id="c4" style="background-color: #33984b;">4</span>
+        <span id="c5" style="background-color: #0098dc;">5</span>
+        <span id="c6" style="background-color: #93388f;">6</span>
+        <span id="c7" style="background-color: #131313;">7</span>
+        <span id="c8" style="background-color: #ffffff;">8</span>
         <div id="color-board"></div>
     </div>
 </body>
@@ -47,9 +47,11 @@
         color: #ffffffaa;
         padding: 1em;
         font-size: larger;
+        text-shadow: -1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa
     }
     #color-board {
         margin-top: 2em;
+        line-height: 0%;
     }
     #color-board span {
         display: inline-block;
