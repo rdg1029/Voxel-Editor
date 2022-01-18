@@ -10,14 +10,14 @@
     <script src="main.js"></script>
     <img src="./crosshair.svg" />
     <div id="palette">
-        <span id="c1" style="background-color: #ff0040;">1</span>
-        <span id="c2" style="background-color: #ed7614;">2</span>
-        <span id="c3" style="background-color: #ffc825;">3</span>
-        <span id="c4" style="background-color: #33984b;">4</span>
-        <span id="c5" style="background-color: #0098dc;">5</span>
-        <span id="c6" style="background-color: #93388f;">6</span>
-        <span id="c7" style="background-color: #131313;">7</span>
-        <span id="c8" style="background-color: #ffffff;">8</span>
+        <span class="palette-list" style="background-color: #ff0040;">1</span>
+        <span class="palette-list" style="background-color: #ed7614;">2</span>
+        <span class="palette-list" style="background-color: #ffc825;">3</span>
+        <span class="palette-list" style="background-color: #33984b;">4</span>
+        <span class="palette-list" style="background-color: #0098dc;">5</span>
+        <span class="palette-list" style="background-color: #93388f;">6</span>
+        <span class="palette-list" style="background-color: #131313;">7</span>
+        <span class="palette-list" style="background-color: #ffffff;">8</span>
         <div id="color-board"></div>
     </div>
 </body>
@@ -43,7 +43,7 @@
         position: absolute;
         margin-top: 1em;
     }
-    #palette span {
+    .palette-list {
         color: #ffffffaa;
         padding: 1em;
         font-size: larger;
@@ -55,8 +55,8 @@
     }
     #color-board span {
         display: inline-block;
-        width: 0.5em;
-        height: 0.5em;
+        width: 2em;
+        height: 2em;
     }
 </style>
 </html>
