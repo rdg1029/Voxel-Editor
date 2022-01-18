@@ -324,14 +324,6 @@ function placeVoxel() {
         updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
     }
 }
-pointerLockControls.addEventListener('lock', () => {
-    window.addEventListener('pointerdown', placeVoxel);
-    pointerLockControls.addEventListener('change', selectVoxel);
-});
-pointerLockControls.addEventListener('unlock', () => {
-    window.removeEventListener('pointerdown', placeVoxel);
-    pointerLockControls.removeEventListener('change', selectVoxel);
-});
 
 // Set World
 const CHUNK_SIZE = 32;
@@ -347,6 +339,16 @@ updateChunkGeometry(0, 0, 0);
 function init() {
     //Set Palette
     const palette = new Palette();
+
+    pointerLockControls.addEventListener('lock', () => {
+        window.addEventListener('pointerdown', placeVoxel);
+        pointerLockControls.addEventListener('change', selectVoxel);
+        palette.colorBoard.style.display = 'none';
+    });
+    pointerLockControls.addEventListener('unlock', () => {
+        window.removeEventListener('pointerdown', placeVoxel);
+        pointerLockControls.removeEventListener('change', selectVoxel);
+    });
 
     renderer.setAnimationLoop(() => {
         const delta = clock.getDelta();
