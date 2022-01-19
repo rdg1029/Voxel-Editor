@@ -16,7 +16,6 @@ class Palette {
                 paletteListData[selected] = i;
                 this.list[selected].style.backgroundColor = voxelData[i];
                 this.colorBoard.style.display = 'none';
-                console.log(paletteListData[selected]);
             });
             this.colorBoard.appendChild(color);
             if (i % 8 === 0) {

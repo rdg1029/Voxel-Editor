@@ -189,25 +189,6 @@ function updateControls(delta) {
     }
 }
 
-renderer.domElement.addEventListener('click', () => {
-    pointerLockControls.lock();
-});
-window.addEventListener('keydown', e => {
-    if (!movKey.has(e.code)) return;
-    movKey.set(e.code, true);
-});
-window.addEventListener('keyup', e => {
-    if (!movKey.has(e.code)) return;
-    movKey.set(e.code, false);
-});
-window.addEventListener('resize', () => { 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    renderer.setSize(width, height, true);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-});
-
 // Define voxel material
 const material = new THREE.MeshBasicMaterial({vertexColors: THREE.VertexColors});
 
@@ -336,9 +317,55 @@ for (let z = 0; z < CHUNK_SIZE; z++) {
 }
 updateChunkGeometry(0, 0, 0);
 
-function init() {
+function onWindowLoaded() {
     //Set Palette
     const palette = new Palette();
+
+    renderer.domElement.addEventListener('click', () => {
+        pointerLockControls.lock();
+    });
+    window.addEventListener('keydown', e => {
+        switch(e.code) {
+            case 'Digit1':
+                palette.select(0);
+                break;
+            case 'Digit2':
+                palette.select(1);
+                break;
+            case 'Digit3':
+                palette.select(2);
+                break;
+            case 'Digit4':
+                palette.select(3);
+                break;
+            case 'Digit5':
+                palette.select(4);
+                break;
+            case 'Digit6':
+                palette.select(5);
+                break;
+            case 'Digit7':
+                palette.select(6);
+                break;
+            case 'Digit8':
+                palette.select(7);
+                break;
+            default:
+                if (!movKey.has(e.code)) return;
+                movKey.set(e.code, true);
+        }
+    });
+    window.addEventListener('keyup', e => {
+        if (!movKey.has(e.code)) return;
+        movKey.set(e.code, false);
+    });
+    window.addEventListener('resize', () => { 
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        renderer.setSize(width, height, true);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    });
 
     pointerLockControls.addEventListener('lock', () => {
         window.addEventListener('pointerdown', placeVoxel);
@@ -356,4 +383,4 @@ function init() {
         renderer.render(scene, camera);
     });
 }
-window.onload = init;
+window.onload = onWindowLoaded;
