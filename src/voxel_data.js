@@ -66,4 +66,12 @@ const voxelData = [
     '#571c27'
 ];
 
-export {voxelData};
+function getRGB(hex) {
+    return [
+        parseInt(hex.charAt(1) + hex.charAt(2), 16) / 255,
+        parseInt(hex.charAt(3) + hex.charAt(4), 16) / 255,
+        parseInt(hex.charAt(5) + hex.charAt(6), 16) / 255,
+    ];
+}
+
+export {voxelData, getRGB};
