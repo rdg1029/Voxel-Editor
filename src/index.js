@@ -172,7 +172,7 @@ function onWindowLoaded() {
     const material = new THREE.MeshLambertMaterial({vertexColors: THREE.VertexColors});
 
     // Define voxel helper
-    const voxelHelperGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const voxelHelperGeometry = new THREE.BoxGeometry(1.001, 1.001, 1.001);
     const voxelHelperMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, opacity: 0.5, transparent: true});
     const voxelHelperMesh = new THREE.Mesh(voxelHelperGeometry, voxelHelperMaterial);
 
@@ -292,7 +292,7 @@ function onWindowLoaded() {
                 return;
             }
         });
-        return selectPos;
+        return {selectPos, normal};
     }
     function getIntersects() {
         raycaster.setFromCamera(crossHairPos, camera);
@@ -301,8 +301,8 @@ function onWindowLoaded() {
     function selectVoxel() {
         const intersect = getIntersects();
         if (intersect[0]) {
-            const selectPos = getSelectPos(intersect[0]);
-            voxelHelperMesh.position.set(selectPos.x + .5, selectPos.y + .5, selectPos.z + .5);
+            const {selectPos, normal} = getSelectPos(intersect[0]);
+            voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
             scene.add(voxelHelperMesh);
         }
         else {
@@ -312,8 +312,7 @@ function onWindowLoaded() {
     function placeVoxel() {
         const intersect = getIntersects();
         if (intersect[0]) {
-            const selectPos = getSelectPos(intersect[0]);
-            // console.log(selectPos);
+            const {selectPos} = getSelectPos(intersect[0]);
             world.setVoxel(selectPos.x, selectPos.y, selectPos.z, palette.getSelectedColorCode());
             updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
         }
