@@ -312,9 +312,13 @@ function onWindowLoaded() {
     function placeVoxel() {
         const intersect = getIntersects();
         if (intersect[0]) {
-            const {selectPos} = getSelectPos(intersect[0]);
+            const {selectPos, normal} = getSelectPos(intersect[0]);
+            if (palette.selected === -1) {
+                selectPos.sub(normal);
+            }
             world.setVoxel(selectPos.x, selectPos.y, selectPos.z, palette.getSelectedColorCode());
             updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
+            console.log(palette.getSelectedColorCode());
         }
     }
 
@@ -346,6 +350,9 @@ function onWindowLoaded() {
                 break;
             case 'Digit8':
                 palette.select(7);
+                break;
+            case 'KeyX':
+                palette.select(-1);
                 break;
             default:
                 if (!movKey.has(e.code)) return;

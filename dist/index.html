@@ -18,6 +18,7 @@
         <span class="palette-list" style="background-color: #93388f;">6</span>
         <span class="palette-list" style="background-color: #131313;">7</span>
         <span class="palette-list" style="background-color: #ffffff;">8</span>
+        <span id="eraser">X</span>
         <div id="color-board"></div>
     </div>
 </body>
@@ -52,6 +53,14 @@
         text-shadow: -1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa;
         border-style: none;
         border-color: #ffffffaa;
+    }
+    #eraser {
+        color: #ff0000aa;
+        padding: 1em;
+        font-size: larger;
+        text-shadow: -1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa;
+        border-style: solid;
+        border-color: #000000aa;
     }
     #color-board {
         display: none;
