@@ -21,6 +21,10 @@
         <span id="eraser">X</span>
         <div id="color-board"></div>
     </div>
+    <div id="file">
+        <button id="save">save</button>
+        <button id="load">load</button>
+    </div>
 </body>
 <style>
     body {
@@ -71,6 +75,12 @@
         display: inline-block;
         width: 2em;
         height: 2em;
+    }
+    #file {
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 1;
     }
 </style>
 </html>
