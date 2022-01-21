@@ -6,7 +6,7 @@ class World {
         this.chunkSize = chunkSize;
         this.chunkSliceSize = chunkSize * chunkSize;
         // this.chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
-        this.chunks = {};
+        this.chunks = new Map();
         this.faces = [
             { //left
                 dir: [-1, 0, 0],
@@ -73,7 +73,7 @@ class World {
         return `${chunkX},${chunkY},${chunkZ}`;
     }
     getChunkForVoxel(x, y, z) {
-        return this.chunks[this.computeChunkId(x, y, z)];
+        return this.chunks.get(this.computeChunkId(x, y, z));
     }
     computeVoxelOffset(x, y, z) {
         const { chunkSize, chunkSliceSize } = this;
@@ -92,11 +92,11 @@ class World {
     }
     addChunkForVoxel(x, y, z) {
         const chunkId = this.computeChunkId(x, y, z);
-        let chunk = this.chunks[chunkId];
+        let chunk = this.chunks.get(chunkId);
         if (!chunk) {
             const { chunkSize } = this;
             chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
-            this.chunks[chunkId] = chunk;
+            this.chunks.set(chunkId, chunk);
         }
         return chunk;
     }
