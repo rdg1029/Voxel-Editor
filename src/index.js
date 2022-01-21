@@ -249,5 +249,13 @@ function onWindowLoaded() {
         }
     }
     updateChunkGeometry(0, 0, 0);
+
+    //Set save & load button
+    const saveButton = document.getElementById('save');
+    const loadButton = document.getElementById('load');
+    saveButton.addEventListener('click', () => {
+        const chunkBlob = new Blob([world.chunks.get('0,0,0').buffer], {type:'application/octet-stream'});
+        window.open(URL.createObjectURL(chunkBlob), '_blank');
+    });
 }
 window.onload = onWindowLoaded;
