@@ -254,8 +254,21 @@ function onWindowLoaded() {
     const saveButton = document.getElementById('save');
     const loadButton = document.getElementById('load');
     saveButton.addEventListener('click', () => {
-        const chunkBlob = new Blob([world.chunks.get('0,0,0').buffer], {type:'application/octet-stream'});
-        window.open(URL.createObjectURL(chunkBlob), '_blank');
+        const zip = new JSZip();
+        world.chunks.forEach((data, id) => {
+            zip.file(id, data);
+        });
+        zip.generateAsync({type:'blob'})
+        .then(content => {
+            // const chunkBlob = new Blob([data.buffer], {type:'application/octet-stream'});
+            const url = URL.createObjectURL(content);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'test.zip';
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
     });
 }
 window.onload = onWindowLoaded;
