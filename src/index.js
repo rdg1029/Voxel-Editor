@@ -276,10 +276,14 @@ function onWindowLoaded() {
             zip.forEach((chunk, file) => {
                 file.async('uint8array').then(data => {
                     world.chunks.set(chunk, data);
+                    const pos = chunk.split(',');
+                    const x = parseInt(pos[0], 10) * CHUNK_SIZE;
+                    const y = parseInt(pos[1], 10) * CHUNK_SIZE;
+                    const z = parseInt(pos[2], 10) * CHUNK_SIZE;
+                    updateChunkGeometry(x, y, z);
                 });
             });
-            console.log(world.chunks);
-        })
+        });
     });
 }
 window.onload = onWindowLoaded;
