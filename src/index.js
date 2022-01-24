@@ -251,9 +251,9 @@ function onWindowLoaded() {
     updateChunkGeometry(0, 0, 0);
 
     //Set save & load button
-    const saveButton = document.getElementById('save');
-    const loadButton = document.getElementById('load');
-    saveButton.addEventListener('click', () => {
+    const save = document.getElementById('save');
+    const load = document.getElementById('load');
+    save.addEventListener('click', () => {
         const zip = new JSZip();
         world.chunks.forEach((data, id) => {
             zip.file(id, data);
@@ -269,6 +269,17 @@ function onWindowLoaded() {
             a.remove();
             URL.revokeObjectURL(url);
         });
+    });
+    load.addEventListener('input', () => {
+        const zip = new JSZip();
+        zip.loadAsync(load.files[0]).then(() => {
+            zip.forEach((chunk, file) => {
+                file.async('uint8array').then(data => {
+                    world.chunks.set(chunk, data);
+                });
+            });
+            console.log(world.chunks);
+        })
     });
 }
 window.onload = onWindowLoaded;
