@@ -118,7 +118,14 @@ function onWindowLoaded() {
         // raycaster와 voxel helper가 변경된 오브젝트를 인식할 수 있게 함.
         // https://threejs.org/docs/#manual/ko/introduction/How-to-update-things
         geometry.computeBoundingSphere();
-    
+        
+        if (index.length === 0) {
+            // If chunk is empty
+            world.chunks.delete(chunkId);
+            chunkIdToMesh.delete(chunkId);
+            return;
+        }
+
         if (!mesh) {
             mesh = new THREE.Mesh(geometry, material);
             mesh.name = chunkId;
