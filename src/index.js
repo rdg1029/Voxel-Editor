@@ -3,6 +3,8 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 import { World } from './world';
 import { Palette } from './palette';
 
+const CHUNK_SIZE = 32;
+
 function onWindowLoaded() {
     const clock = new THREE.Clock();
     const scene = new THREE.Scene();
@@ -19,6 +21,11 @@ function onWindowLoaded() {
     scene.add(light);
 
     const pointerLockControls = new PointerLockControls(camera, document.body);
+
+    // Define grid helper
+    const gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
+    gridHelper.position.set(CHUNK_SIZE / 2, 0, CHUNK_SIZE / 2);
+    scene.add(gridHelper);
 
     // Define voxel material
     const material = new THREE.MeshLambertMaterial({vertexColors: THREE.VertexColors});
@@ -118,11 +125,18 @@ function onWindowLoaded() {
         // raycaster와 voxel helper가 변경된 오브젝트를 인식할 수 있게 함.
         // https://threejs.org/docs/#manual/ko/introduction/How-to-update-things
         geometry.computeBoundingSphere();
-        
+
+        // If chunk is empty
         if (index.length === 0) {
-            // If chunk is empty
             world.chunks.delete(chunkId);
             chunkIdToMesh.delete(chunkId);
+            // If chunk not exist
+            if (chunkIdToMesh.size === 0) {
+                scene.add(gridHelper);
+            }
+            else {
+                scene.remove(gridHelper);
+            }
             return;
         }
 
@@ -141,6 +155,10 @@ function onWindowLoaded() {
     }
     function getSelectPos(intersect) {
         const selectPos = intersect.point.clone();
+        if (chunkIdToMesh.size === 0) {
+            selectPos.floor();
+            return {selectPos};
+        }
         const normal = intersect.face.normal;
         Object.values(normal).forEach((n, idx) => {
             if (n !== 0) {
@@ -155,13 +173,20 @@ function onWindowLoaded() {
     }
     function getIntersects() {
         raycaster.setFromCamera(crossHairPos, camera);
-        return raycaster.intersectObjects(Array.from(chunkIdToMesh.values()), false);
+        const objects = chunkIdToMesh.size === 0 ? [gridHelper] : Array.from(chunkIdToMesh.values());
+        return raycaster.intersectObjects(objects, false);
     }
     function selectVoxel() {
         const intersect = getIntersects();
         if (intersect[0]) {
-            const {selectPos, normal} = getSelectPos(intersect[0]);
-            voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
+            if (chunkIdToMesh.size === 0) {
+                const {selectPos} = getSelectPos(intersect[0]);
+                voxelHelperMesh.position.copy(selectPos.addScalar(.5));
+            }
+            else {
+                const {selectPos, normal} = getSelectPos(intersect[0]);
+                voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
+            }
             scene.add(voxelHelperMesh);
         }
         else {
@@ -171,12 +196,12 @@ function onWindowLoaded() {
     function placeVoxel() {
         const intersect = getIntersects();
         if (intersect[0]) {
-            const {selectPos, normal} = getSelectPos(intersect[0]);
-            if (palette.selected === -1) {
-                selectPos.sub(normal);
+            const select = getSelectPos(intersect[0]);
+            if (palette.selected === -1 && chunkIdToMesh.size !== 0) {
+                select.selectPos.sub(select.normal);
             }
-            world.setVoxel(selectPos.x, selectPos.y, selectPos.z, palette.getSelectedColorCode());
-            updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
+            world.setVoxel(select.selectPos.x, select.selectPos.y, select.selectPos.z, palette.getSelectedColorCode());
+            updateVoxelGeometry(select.selectPos.x, select.selectPos.y, select.selectPos.z);
             console.log(palette.getSelectedColorCode());
         }
     }
@@ -247,15 +272,7 @@ function onWindowLoaded() {
     });
     
     // Set World
-    const CHUNK_SIZE = 32;
     const world = new World(CHUNK_SIZE);
-        
-    for (let z = 0; z < CHUNK_SIZE; z++) {
-        for (let x = 0; x < CHUNK_SIZE; x++) {
-            world.setVoxel(x, 0, z, 36);
-        }
-    }
-    updateChunkGeometry(0, 0, 0);
 
     //Set save & load button
     const save = document.getElementById('save');
