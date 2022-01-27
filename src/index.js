@@ -115,6 +115,8 @@ function onWindowLoaded() {
                 scene.add(gridHelper);
             }
             else {
+                gridHelper.geometry.dispose();
+                gridHelper.material.dispose();
                 scene.remove(gridHelper);
             }
             return;
