@@ -105,6 +105,20 @@ function onWindowLoaded() {
         const geometry = mesh ? mesh.geometry : new THREE.BufferGeometry();
     
         const { positions, normals, colors, index } = world.generateGeometryData(chunkX, chunkY, chunkZ);
+        // If chunk is empty
+        if (index.length === 0) {
+            world.chunks.delete(chunkId);
+            chunkIdToMesh.delete(chunkId);
+            geometry.dispose();
+            // If chunk not exist
+            if (chunkIdToMesh.size === 0) {
+                scene.add(gridHelper);
+            }
+            else {
+                scene.remove(gridHelper);
+            }
+            return;
+        }
         const positionNumComponents = 3;
         const normalNumComponents = 3;
         const colorNumComponents = 3;
@@ -126,20 +140,6 @@ function onWindowLoaded() {
         // https://threejs.org/docs/#manual/ko/introduction/How-to-update-things
         geometry.computeBoundingSphere();
 
-        // If chunk is empty
-        if (index.length === 0) {
-            world.chunks.delete(chunkId);
-            chunkIdToMesh.delete(chunkId);
-            // If chunk not exist
-            if (chunkIdToMesh.size === 0) {
-                scene.add(gridHelper);
-            }
-            else {
-                scene.remove(gridHelper);
-            }
-            return;
-        }
-
         if (!mesh) {
             mesh = new THREE.Mesh(geometry, material);
             mesh.name = chunkId;
@@ -147,11 +147,15 @@ function onWindowLoaded() {
             scene.add(mesh);
             mesh.position.set(chunkX * CHUNK_SIZE, chunkY * CHUNK_SIZE, chunkZ * CHUNK_SIZE);
         }
-        /*
-        const wireFrame = new THREE.WireframeGeometry(geometry);
-        const line = new THREE.LineSegments(wireFrame);
-        scene.add(line);
-        */
+    }
+    function clearAllChunks() {
+        world.chunks.forEach((data, id) => {
+            const chunk = chunkIdToMesh.get(id);
+            chunk.geometry.dispose();
+            scene.remove(chunk);
+            chunkIdToMesh.delete(id);
+            world.chunks.delete(id);
+        });
     }
     function getSelectPos(intersect) {
         const selectPos = intersect.point.clone();
@@ -297,13 +301,14 @@ function onWindowLoaded() {
     load.addEventListener('input', () => {
         const zip = new JSZip();
         zip.loadAsync(load.files[0]).then(() => {
+            clearAllChunks();
             zip.forEach((chunk, file) => {
                 file.async('uint8array').then(data => {
                     world.chunks.set(chunk, data);
                     const pos = chunk.split(',');
-                    const x = parseInt(pos[0], 10) * CHUNK_SIZE;
-                    const y = parseInt(pos[1], 10) * CHUNK_SIZE;
-                    const z = parseInt(pos[2], 10) * CHUNK_SIZE;
+                    const x = Number(pos[0]) * CHUNK_SIZE;
+                    const y = Number(pos[1]) * CHUNK_SIZE;
+                    const z = Number(pos[2]) * CHUNK_SIZE;
                     updateChunkGeometry(x, y, z);
                 });
             });
