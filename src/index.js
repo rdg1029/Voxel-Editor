@@ -10,7 +10,7 @@ function onWindowLoaded() {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#87ceeb');
 
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
     camera.position.set(16, 2, 16);
 
     const renderer = new THREE.WebGLRenderer();
