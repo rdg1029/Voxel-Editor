@@ -8,7 +8,7 @@ const CHUNK_SIZE = 32;
 function onWindowLoaded() {
     const clock = new THREE.Clock();
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#87ceeb');
+    scene.background = new THREE.Color(0x87ceeb);
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
     camera.position.set(16, 2, 16);
