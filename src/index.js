@@ -4,6 +4,7 @@ import { World } from './world';
 import { Palette } from './palette';
 
 const CHUNK_SIZE = 32;
+let isVoxel = true;
 
 function onWindowLoaded() {
     const clock = new THREE.Clock();
@@ -280,7 +281,7 @@ function onWindowLoaded() {
     // Set World
     const world = new World(CHUNK_SIZE);
 
-    //Set save & load button
+    // Set save & load button
     const save = document.getElementById('save');
     const load = document.getElementById('load');
     save.addEventListener('click', () => {
@@ -315,6 +316,20 @@ function onWindowLoaded() {
                 });
             });
         });
+    });
+
+    // Set voxel & block button
+    const voxelButton = document.getElementById('voxel');
+    const blockButton = document.getElementById('block');
+    voxelButton.addEventListener('click', () => {
+        if (isVoxel) return;
+        isVoxel = true;
+        voxelHelperGeometry.scale(1/8, 1/8, 1/8);
+    });
+    blockButton.addEventListener('click', () => {
+        if (!isVoxel) return;
+        isVoxel = false;
+        voxelHelperGeometry.scale(8, 8, 8);
     });
 }
 window.onload = onWindowLoaded;

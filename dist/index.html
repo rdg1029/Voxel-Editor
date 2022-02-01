@@ -26,6 +26,10 @@
         <button id="save">save</button>
         <input id="load" type="file" accept=".zip">
     </div>
+    <div id="size">
+        <button id="voxel">voxel</button>
+        <button id="block">block</button>
+    </div>
 </body>
 <style>
     body {
@@ -81,6 +85,12 @@
         position: absolute;
         right: 0;
         top: 0;
+        z-index: 1;
+    }
+    #size {
+        position: absolute;
+        right: 0;
+        bottom: 0;
         z-index: 1;
     }
 </style>
