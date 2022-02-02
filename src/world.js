@@ -4,7 +4,9 @@ import { voxelData, getRGB } from './voxel_data';
 class World {
     constructor(chunkSize) {
         this.chunkSize = chunkSize;
-        this.chunkSliceSize = chunkSize * chunkSize;
+        this.chunkSizeBit = Math.log2(chunkSize);
+        this.chunkSliceSize = chunkSize << this.chunkSizeBit;
+        this.chunkSliceSizeBit = Math.log2(this.chunkSliceSize);
         // this.chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
         this.chunks = new Map();
         this.faces = [
@@ -66,21 +68,21 @@ class World {
         ]
     }
     computeChunkId(x, y, z) {
-        const { chunkSize } = this;
-        const chunkX = Math.floor(x / chunkSize);
-        const chunkY = Math.floor(y / chunkSize);
-        const chunkZ = Math.floor(z / chunkSize);
+        const { chunkSizeBit } = this;
+        const chunkX = x >> chunkSizeBit;
+        const chunkY = y >> chunkSizeBit;
+        const chunkZ = z >> chunkSizeBit;
         return `${chunkX},${chunkY},${chunkZ}`;
     }
     getChunkForVoxel(x, y, z) {
         return this.chunks.get(this.computeChunkId(x, y, z));
     }
     computeVoxelOffset(x, y, z) {
-        const { chunkSize, chunkSliceSize } = this;
+        const { chunkSize, chunkSizeBit, chunkSliceSizeBit } = this;
         const voxelX = THREE.MathUtils.euclideanModulo(x, chunkSize) | 0;
         const voxelY = THREE.MathUtils.euclideanModulo(y, chunkSize) | 0;
         const voxelZ = THREE.MathUtils.euclideanModulo(z, chunkSize) | 0;
-        return voxelY * chunkSliceSize + voxelZ * chunkSize + voxelX;
+        return (voxelY << chunkSliceSizeBit) + (voxelZ << chunkSizeBit) + voxelX;
     }
     setVoxel(x, y, z, v) {
         let chunk = this.getChunkForVoxel(x, y, z);
@@ -94,8 +96,8 @@ class World {
         const chunkId = this.computeChunkId(x, y, z);
         let chunk = this.chunks.get(chunkId);
         if (!chunk) {
-            const { chunkSize } = this;
-            chunk = new Uint8Array(chunkSize * chunkSize * chunkSize);
+            const { chunkSliceSize, chunkSizeBit } = this;
+            chunk = new Uint8Array(chunkSliceSize << chunkSizeBit);
             this.chunks.set(chunkId, chunk);
         }
         return chunk;
@@ -107,7 +109,7 @@ class World {
         return chunk[voxelOffset];
     }
     generateGeometryData(chunkX, chunkY, chunkZ) {
-        const { chunkSize } = this;
+        const { chunkSize, chunkSizeBit } = this;
 
         //BufferAttribute for BufferGeometry
         const positions = []; // 정점 (꼭짓점) 위치 데이터
@@ -116,9 +118,9 @@ class World {
         const index = []; // 정점 좌표 배열
 
         // chunk의 시작 좌표
-        const startX = chunkX * chunkSize;
-        const startY = chunkY * chunkSize;
-        const startZ = chunkZ * chunkSize;
+        const startX = chunkX << chunkSizeBit;
+        const startY = chunkY << chunkSizeBit;
+        const startZ = chunkZ << chunkSizeBit;
 
         for(let y = 0; y < chunkSize; ++y) {
             const voxelY = startY + y;

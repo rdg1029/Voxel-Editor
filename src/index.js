@@ -5,8 +5,8 @@ import { Palette } from './palette';
 
 const CHUNK_SIZE = 32;
 const BLOCK_SIZE = 8;
-const CHUNK_SIZE_BIT = 5;
-const BLOCK_SIZE_BIT = 3;
+const CHUNK_SIZE_BIT = Math.log2(CHUNK_SIZE);
+const BLOCK_SIZE_BIT = Math.log2(BLOCK_SIZE);
 let isVoxel = true;
 
 function onWindowLoaded() {
@@ -15,7 +15,7 @@ function onWindowLoaded() {
     scene.background = new THREE.Color(0x87ceeb);
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
-    camera.position.set(16, 2, 16);
+    camera.position.set(CHUNK_SIZE >> 1, 2, CHUNK_SIZE >> 1);
 
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -189,13 +189,13 @@ function onWindowLoaded() {
                     selectPos.x = selectPos.x << 0;
                     selectPos.y = selectPos.y << 0;
                     selectPos.z = selectPos.z << 0;
+                    if (n === -1) selectPos.add(normal);
                 }
                 else {
                     selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                 }
-                if (n === -1) selectPos.add(normal);
                 return;
             }
         });
@@ -215,7 +215,7 @@ function onWindowLoaded() {
                     voxelHelperMesh.position.copy(selectPos.addScalar(.5));
                 }
                 else {
-                    voxelHelperMesh.position.copy(selectPos.addScalar(BLOCK_SIZE >> 1));
+                    voxelHelperMesh.position.copy(selectPos.addScalar(4));
                 }
             }
             else {
@@ -224,7 +224,8 @@ function onWindowLoaded() {
                     voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
                 }
                 else {
-                    voxelHelperMesh.position.copy(selectPos.addScalar(BLOCK_SIZE >> 1).sub(normal));
+                    normal.multiplyScalar(BLOCK_SIZE);
+                    voxelHelperMesh.position.copy(selectPos.addScalar(4).sub(normal));
                 }
             }
             scene.add(voxelHelperMesh);
