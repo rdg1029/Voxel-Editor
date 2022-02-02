@@ -4,6 +4,9 @@ import { World } from './world';
 import { Palette } from './palette';
 
 const CHUNK_SIZE = 32;
+const BLOCK_SIZE = 8;
+const CHUNK_SIZE_BIT = 5;
+const BLOCK_SIZE_BIT = 3;
 let isVoxel = true;
 
 function onWindowLoaded() {
@@ -26,7 +29,7 @@ function onWindowLoaded() {
 
     // Define grid helper
     const gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
-    gridHelper.position.set(CHUNK_SIZE / 2, 0, CHUNK_SIZE / 2);
+    gridHelper.position.set(CHUNK_SIZE >> 1, 0, CHUNK_SIZE >> 1);
     scene.add(gridHelper);
 
     // Define voxel material
@@ -99,9 +102,9 @@ function onWindowLoaded() {
         });
     }
     function updateChunkGeometry(x, y, z) {
-        const chunkX = Math.floor(x / CHUNK_SIZE);
-        const chunkY = Math.floor(y / CHUNK_SIZE);
-        const chunkZ = Math.floor(z / CHUNK_SIZE);
+        const chunkX = x >> CHUNK_SIZE_BIT;
+        const chunkY = y >> CHUNK_SIZE_BIT;
+        const chunkZ = z >> CHUNK_SIZE_BIT;
         const chunkId = world.computeChunkId(x, y, z);
         let mesh = chunkIdToMesh.get(chunkId);
         const geometry = mesh ? mesh.geometry : new THREE.BufferGeometry();
@@ -148,7 +151,7 @@ function onWindowLoaded() {
             mesh.name = chunkId;
             chunkIdToMesh.set(chunkId, mesh);
             scene.add(mesh);
-            mesh.position.set(chunkX * CHUNK_SIZE, chunkY * CHUNK_SIZE, chunkZ * CHUNK_SIZE);
+            mesh.position.set(chunkX << CHUNK_SIZE_BIT, chunkY << CHUNK_SIZE_BIT, chunkZ << CHUNK_SIZE_BIT);
         }
     }
     function clearAllChunks() {
@@ -161,9 +164,19 @@ function onWindowLoaded() {
         });
     }
     function getSelectPos(intersect) {
-        const selectPos = intersect.point.clone();
+        const selectPos = intersect.point;
         if (chunkIdToMesh.size === 0) {
-            selectPos.floor();
+            if (isVoxel) {
+                // selectPos.floor();
+                selectPos.x = selectPos.x << 0;
+                selectPos.y = selectPos.y << 0;
+                selectPos.z = selectPos.z << 0;
+            }
+            else {
+                selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+            }
             return {selectPos};
         }
         const normal = intersect.face.normal;
@@ -171,7 +184,17 @@ function onWindowLoaded() {
             if (n !== 0) {
                 const pos = selectPos.getComponent(idx);
                 selectPos.setComponent(idx, Math.round(pos));
-                selectPos.floor();
+                if (isVoxel) {
+                    // selectPos.floor();
+                    selectPos.x = selectPos.x << 0;
+                    selectPos.y = selectPos.y << 0;
+                    selectPos.z = selectPos.z << 0;
+                }
+                else {
+                    selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                    selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                    selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                }
                 if (n === -1) selectPos.add(normal);
                 return;
             }
@@ -188,11 +211,21 @@ function onWindowLoaded() {
         if (intersect[0]) {
             if (chunkIdToMesh.size === 0) {
                 const {selectPos} = getSelectPos(intersect[0]);
-                voxelHelperMesh.position.copy(selectPos.addScalar(.5));
+                if (isVoxel) {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(.5));
+                }
+                else {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(BLOCK_SIZE >> 1));
+                }
             }
             else {
                 const {selectPos, normal} = getSelectPos(intersect[0]);
-                voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
+                if (isVoxel) {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
+                }
+                else {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(BLOCK_SIZE >> 1).sub(normal));
+                }
             }
             scene.add(voxelHelperMesh);
         }
@@ -309,9 +342,9 @@ function onWindowLoaded() {
                 file.async('uint8array').then(data => {
                     world.chunks.set(chunk, data);
                     const pos = chunk.split(',');
-                    const x = Number(pos[0]) * CHUNK_SIZE;
-                    const y = Number(pos[1]) * CHUNK_SIZE;
-                    const z = Number(pos[2]) * CHUNK_SIZE;
+                    const x = Number(pos[0]) << CHUNK_SIZE_BIT;
+                    const y = Number(pos[1]) << CHUNK_SIZE_BIT;
+                    const z = Number(pos[2]) << CHUNK_SIZE_BIT;
                     updateChunkGeometry(x, y, z);
                 });
             });
