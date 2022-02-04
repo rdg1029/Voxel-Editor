@@ -7,6 +7,7 @@ const CHUNK_SIZE = 32;
 const BLOCK_SIZE = 8;
 const CHUNK_SIZE_BIT = Math.log2(CHUNK_SIZE);
 const BLOCK_SIZE_BIT = Math.log2(BLOCK_SIZE);
+
 let isVoxel = true;
 
 function onWindowLoaded() {
@@ -195,6 +196,8 @@ function onWindowLoaded() {
                     selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                    normal.setComponent(idx, n << BLOCK_SIZE_BIT);
+                    selectPos.add(normal);
                 }
                 return;
             }
@@ -224,7 +227,6 @@ function onWindowLoaded() {
                     voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
                 }
                 else {
-                    normal.multiplyScalar(BLOCK_SIZE);
                     voxelHelperMesh.position.copy(selectPos.addScalar(4).sub(normal));
                 }
             }
