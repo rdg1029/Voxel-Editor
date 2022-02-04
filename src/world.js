@@ -92,6 +92,20 @@ class World {
         const voxelOffset = this.computeVoxelOffset(x, y, z);
         chunk[voxelOffset] = v;
     }
+    setBlock(x, y, z, v) {
+        let chunk = this.getChunkForVoxel(x, y, z);
+        if (!chunk) {
+            chunk = this.addChunkForVoxel(x, y, z);
+        }
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                for (let k = 0; k < 8; k++) {
+                    const voxelOffset = this.computeVoxelOffset(x + k, y + i, z + j);
+                    chunk[voxelOffset] = v;                    
+                }
+            }
+        }        
+    }
     addChunkForVoxel(x, y, z) {
         const chunkId = this.computeChunkId(x, y, z);
         let chunk = this.chunks.get(chunkId);

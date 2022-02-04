@@ -197,7 +197,7 @@ function onWindowLoaded() {
                     selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     normal.setComponent(idx, n << BLOCK_SIZE_BIT);
-                    selectPos.add(normal);
+                    if (n === -8) selectPos.add(normal);
                 }
                 return;
             }
@@ -243,9 +243,13 @@ function onWindowLoaded() {
             if (palette.selected === -1 && chunkIdToMesh.size !== 0) {
                 select.selectPos.sub(select.normal);
             }
-            world.setVoxel(select.selectPos.x, select.selectPos.y, select.selectPos.z, palette.getSelectedColorCode());
+            if (isVoxel) {
+                world.setVoxel(select.selectPos.x, select.selectPos.y, select.selectPos.z, palette.getSelectedColorCode());
+            }
+            else {
+                world.setBlock(select.selectPos.x, select.selectPos.y, select.selectPos.z, palette.getSelectedColorCode());
+            }
             updateVoxelGeometry(select.selectPos.x, select.selectPos.y, select.selectPos.z);
-            console.log(palette.getSelectedColorCode());
         }
     }
 
