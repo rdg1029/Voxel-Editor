@@ -190,15 +190,14 @@ function onWindowLoaded() {
                     selectPos.x = selectPos.x << 0;
                     selectPos.y = selectPos.y << 0;
                     selectPos.z = selectPos.z << 0;
-                    if (n === -1) selectPos.add(normal);
                 }
                 else {
                     selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
                     normal.setComponent(idx, n << BLOCK_SIZE_BIT);
-                    if (n === -8) selectPos.add(normal);
                 }
+                if (n < 0) selectPos.add(normal);
                 return;
             }
         });
