@@ -168,10 +168,7 @@ function onWindowLoaded() {
         const selectPos = intersect.point;
         if (chunkIdToMesh.size === 0) {
             if (isVoxel) {
-                // selectPos.floor();
-                selectPos.x = selectPos.x << 0;
-                selectPos.y = selectPos.y << 0;
-                selectPos.z = selectPos.z << 0;
+                selectPos.floor();
             }
             else {
                 selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
@@ -186,10 +183,7 @@ function onWindowLoaded() {
                 const pos = selectPos.getComponent(idx);
                 selectPos.setComponent(idx, Math.round(pos));
                 if (isVoxel) {
-                    // selectPos.floor();
-                    selectPos.x = selectPos.x << 0;
-                    selectPos.y = selectPos.y << 0;
-                    selectPos.z = selectPos.z << 0;
+                    selectPos.floor();
                 }
                 else {
                     selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
@@ -255,6 +249,25 @@ function onWindowLoaded() {
     renderer.domElement.addEventListener('click', () => {
         pointerLockControls.lock();
     });
+    function detectCollision() {
+        const cameraPos = camera.position
+        const pos = cameraPos.clone().floor();
+        const chunkId = world.computeChunkId(pos.x, pos.y, pos.z);
+        if (!world.chunks.has(chunkId)) return;
+        const chunk = world.chunks.get(chunkId);
+        const offset = world.computeVoxelOffset(pos.x, pos.y, pos.z);
+        if (chunk[offset] !== 0) {
+            if (cameraPos.x >= pos.x && cameraPos.x <= pos.x+1) {
+                cameraPos.x = Math.round(cameraPos.x);
+            }
+            if (cameraPos.y >= pos.y && cameraPos.y <= pos.y+1) {
+                cameraPos.y = Math.round(cameraPos.y);
+            }
+            if (cameraPos.z >= pos.z && cameraPos.z <= pos.z+1) {
+                cameraPos.z = Math.round(cameraPos.z);
+            }
+        }
+    }
     window.addEventListener('keydown', e => {
         switch(e.code) {
             case 'Digit1':
@@ -314,6 +327,7 @@ function onWindowLoaded() {
     renderer.setAnimationLoop(() => {
         const delta = clock.getDelta();
         updateControls(delta);
+        detectCollision();
         renderer.render(scene, camera);
     });
     
