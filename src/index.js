@@ -250,23 +250,61 @@ function onWindowLoaded() {
         pointerLockControls.lock();
     });
     function detectCollision() {
-        const cameraPos = camera.position
+        const collision = [false, false, false];
+        const cameraPos = camera.position;
         const pos = cameraPos.clone().floor();
-        const chunkId = world.computeChunkId(pos.x, pos.y, pos.z);
-        if (!world.chunks.has(chunkId)) return;
-        const chunk = world.chunks.get(chunkId);
-        const offset = world.computeVoxelOffset(pos.x, pos.y, pos.z);
-        if (chunk[offset] !== 0) {
-            if (cameraPos.x >= pos.x && cameraPos.x <= pos.x+1) {
-                cameraPos.x = Math.round(cameraPos.x);
-            }
-            if (cameraPos.y >= pos.y && cameraPos.y <= pos.y+1) {
-                cameraPos.y = Math.round(cameraPos.y);
-            }
-            if (cameraPos.z >= pos.z && cameraPos.z <= pos.z+1) {
-                cameraPos.z = Math.round(cameraPos.z);
+        const roundPos = cameraPos.clone().round();
+        const near = [
+            [pos.x === roundPos.x ? pos.x - 1 : roundPos.x, pos.y, pos.z],
+            [pos.x, pos.y === roundPos.y ? pos.y - 1 : roundPos.y, pos.z],
+            [pos.x, pos.y, pos.z === roundPos.z ? pos.z - 1 : roundPos.z]
+        ];
+        for (let i = 0; i < 3; i++) {
+            const chunkId = world.computeChunkId(...near[i]);
+            if (world.chunks.has(chunkId)) {
+                const chunk = world.chunks.get(chunkId);
+                const offset = world.computeVoxelOffset(...near[i]);
+                collision[i] = chunk[offset] === 0 ? false : true;
             }
         }
+        cameraPos.x = 
+            collision[0] ?
+                near[0][0] < pos.x ?
+                    cameraPos.x < near[0][0] + .25 ?
+                    near[0][0] + .25
+                    : cameraPos.x
+                : near[0][0] > pos.x ?
+                    cameraPos.x > near[0][0] - .25 ?
+                    near[0][0] - .25
+                    : cameraPos.x
+                : cameraPos.x
+            : cameraPos.x;
+
+        cameraPos.y =
+            collision[1] ?
+                near[1][1] < pos.y ?
+                    cameraPos.y < near[1][1] + .25 ?
+                    near[1][1] + .25
+                    : cameraPos.y
+                : near[1][1] > pos.y ?
+                    cameraPos.y > near[1][1] - .25 ?
+                    near[1][1] - .25
+                    : cameraPos.y
+                : cameraPos.y
+            : cameraPos.y
+
+        cameraPos.z = 
+            collision[2] ?
+                near[2][2] < pos.z ?
+                    cameraPos.z < near[2][2] + .25 ?
+                    near[2][2] + .25
+                    : cameraPos.z
+                : near[2][2] > pos.z ?
+                    cameraPos.z > near[2][2] - .25 ?
+                    near[2][2] - .25
+                    : cameraPos.z
+                : cameraPos.z
+            :cameraPos.z;
     }
     window.addEventListener('keydown', e => {
         switch(e.code) {
