@@ -249,62 +249,59 @@ function onWindowLoaded() {
     renderer.domElement.addEventListener('click', () => {
         pointerLockControls.lock();
     });
+    const box = new THREE.Box3();
+    const boxSize = new THREE.Vector3(6, 14, 6);;
     function detectCollision() {
-        const collision = [false, false, false];
-        const cameraPos = camera.position;
-        const pos = cameraPos.clone().floor();
-        const roundPos = cameraPos.clone().round();
-        const near = [
-            [pos.x === roundPos.x ? pos.x - 1 : roundPos.x, pos.y, pos.z],
-            [pos.x, pos.y === roundPos.y ? pos.y - 1 : roundPos.y, pos.z],
-            [pos.x, pos.y, pos.z === roundPos.z ? pos.z - 1 : roundPos.z]
-        ];
-        for (let i = 0; i < 3; i++) {
-            const chunkId = world.computeChunkId(...near[i]);
-            if (world.chunks.has(chunkId)) {
-                const chunk = world.chunks.get(chunkId);
-                const offset = world.computeVoxelOffset(...near[i]);
-                collision[i] = chunk[offset] === 0 ? false : true;
+        const boxCenter = camera.position.clone();
+        boxCenter.y -= 5;
+        box.setFromCenterAndSize(boxCenter, boxSize);
+        const boxMin = box.min.clone().floor();
+        for (let by = boxMin.y, my = by + 14; by < my; by++) {
+            for (let bx = boxMin.x, mx = bx + 6; bx < mx; bx++) {
+                for (let bz = boxMin.z, mz = bz + 6; bz < mz; bz++) {
+                    const chunkId = world.computeChunkId(bx, by, bz);
+                    if (!world.chunks.has(chunkId)) continue;
+                    const chunk = world.chunks.get(chunkId);
+                    const offset = world.computeVoxelOffset(bx, by, bz);
+                    if (chunk[offset] === 0) continue;
+                    const dnx = bx + 1 - box.min.x;
+                    const dpx = box.max.x - bx;
+                    const dny = by + 1 - box.min.y;
+                    const dpy = box.max.y - by;
+                    const dnz = bz + 1 - box.min.z;
+                    const dpz = box.max.z - bz;
+                    const collDir = [
+                        Math.abs(dnx),
+                        Math.abs(dpx),
+                        Math.abs(dny),
+                        Math.abs(dpy),
+                        Math.abs(dnz),
+                        Math.abs(dpz),
+                    ];
+                    switch(collDir.indexOf(Math.min.apply(null, collDir))) {
+                        case 0:
+                            camera.position.x += dnx; 
+                            break;
+                        case 1:
+                            camera.position.x -= dpx;
+                            break;
+                        case 2:
+                            camera.position.y += dny;
+                            break;
+                        case 3:
+                            camera.position.y -= dpy;
+                            break;
+                        case 4:
+                            camera.position.z += dnz;
+                            break;
+                        case 5:
+                            camera.position.z -= dpz;
+                            break;
+                    }
+                    break;
+                }
             }
         }
-        cameraPos.x = 
-            collision[0] ?
-                near[0][0] < pos.x ?
-                    cameraPos.x < near[0][0] + .25 ?
-                    near[0][0] + .25
-                    : cameraPos.x
-                : near[0][0] > pos.x ?
-                    cameraPos.x > near[0][0] - .25 ?
-                    near[0][0] - .25
-                    : cameraPos.x
-                : cameraPos.x
-            : cameraPos.x;
-
-        cameraPos.y =
-            collision[1] ?
-                near[1][1] < pos.y ?
-                    cameraPos.y < near[1][1] + .25 ?
-                    near[1][1] + .25
-                    : cameraPos.y
-                : near[1][1] > pos.y ?
-                    cameraPos.y > near[1][1] - .25 ?
-                    near[1][1] - .25
-                    : cameraPos.y
-                : cameraPos.y
-            : cameraPos.y
-
-        cameraPos.z = 
-            collision[2] ?
-                near[2][2] < pos.z ?
-                    cameraPos.z < near[2][2] + .25 ?
-                    near[2][2] + .25
-                    : cameraPos.z
-                : near[2][2] > pos.z ?
-                    cameraPos.z > near[2][2] - .25 ?
-                    near[2][2] - .25
-                    : cameraPos.z
-                : cameraPos.z
-            :cameraPos.z;
     }
     window.addEventListener('keydown', e => {
         switch(e.code) {
