@@ -67,25 +67,24 @@ function onWindowLoaded() {
     //Set Palette
     const palette = new Palette();
 
-    function updateControls(delta) {
-        const movSpeed = 16 * delta;
+    function updateControls(speed) {
         if (movKey.get('KeyW')) {
-            pointerLockControls.moveForward(movSpeed);
+            pointerLockControls.moveForward(speed);
         }
         if (movKey.get('KeyS')) {
-            pointerLockControls.moveForward(-movSpeed);
+            pointerLockControls.moveForward(-speed);
         }
         if (movKey.get('KeyA')) {
-            pointerLockControls.moveRight(-movSpeed);
+            pointerLockControls.moveRight(-speed);
         }
         if (movKey.get('KeyD')) {
-            pointerLockControls.moveRight(movSpeed);
+            pointerLockControls.moveRight(speed);
         }
         if (movKey.get('Space')) {
-            camera.position.y += movSpeed;
+            camera.position.y += speed;
         }
         if (movKey.get('ShiftLeft')) {
-            camera.position.y -= movSpeed;
+            camera.position.y -= speed;
         }
     }
     // Update voxel & chunk functions
@@ -298,7 +297,7 @@ function onWindowLoaded() {
                 break;
         }
     }
-    function detectCollision() {
+    function detectCollision(speed) {
         const boxCenter = camera.position.clone();
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
@@ -394,9 +393,9 @@ function onWindowLoaded() {
     });
 
     renderer.setAnimationLoop(() => {
-        const delta = clock.getDelta();
-        updateControls(delta);
-        detectCollision();
+        const speed = clock.getDelta() * 16;
+        updateControls(speed);
+        detectCollision(speed);
         renderer.render(scene, camera);
     });
     
