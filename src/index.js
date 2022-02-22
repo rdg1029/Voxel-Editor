@@ -250,55 +250,89 @@ function onWindowLoaded() {
         pointerLockControls.lock();
     });
     const box = new THREE.Box3();
-    const boxSize = new THREE.Vector3(6, 14, 6);;
+    const boxSize = new THREE.Vector3(6, 14, 6);
+    function isCollision(x, y, z) {
+        const chunkId = world.computeChunkId(x, y, z);
+        if (!world.chunks.has(chunkId)) return false;
+        const chunk = world.chunks.get(chunkId);
+        const offset = world.computeVoxelOffset(x, y, z);
+        if (chunk[offset] === 0) return false;
+        return true;
+    }
+    function getCollisionIndex(dir) {
+        let min = 0;
+        for (let i = 0; i < 6; i++) {
+            if (dir[min] > dir[i]) {
+                min = i;
+            }
+        }
+        return min;
+    }
+    function collision(bx, by, bz) {
+        const dir = [
+            bx + 1 - box.min.x,    // left
+            box.max.x - bx,        // right
+            by + 1 - box.min.y,    // bottom
+            box.max.y - by,        // top
+            bz + 1 - box.min.z,    // front
+            box.max.z - bz,        // back
+        ];
+        switch(getCollisionIndex(dir)) {
+            case 0:
+                camera.position.x += dir[0];
+                break;
+            case 1:
+                camera.position.x -= dir[1];
+                break;
+            case 2:
+                camera.position.y += dir[2];
+                break;
+            case 3:
+                camera.position.y -= dir[3];
+                break;
+            case 4:
+                camera.position.z += dir[4];
+                break;
+            case 5:
+                camera.position.z -= dir[5];
+                break;
+        }
+    }
     function detectCollision() {
         const boxCenter = camera.position.clone();
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
         const boxMin = box.min.clone().floor();
         for (let by = boxMin.y, my = by + 14; by < my; by++) {
-            for (let bx = boxMin.x, mx = bx + 6; bx < mx; bx++) {
-                for (let bz = boxMin.z, mz = bz + 6; bz < mz; bz++) {
-                    const chunkId = world.computeChunkId(bx, by, bz);
-                    if (!world.chunks.has(chunkId)) continue;
-                    const chunk = world.chunks.get(chunkId);
-                    const offset = world.computeVoxelOffset(bx, by, bz);
-                    if (chunk[offset] === 0) continue;
-                    const dnx = bx + 1 - box.min.x;
-                    const dpx = box.max.x - bx;
-                    const dny = by + 1 - box.min.y;
-                    const dpy = box.max.y - by;
-                    const dnz = bz + 1 - box.min.z;
-                    const dpz = box.max.z - bz;
-                    const collDir = [
-                        Math.abs(dnx),
-                        Math.abs(dpx),
-                        Math.abs(dny),
-                        Math.abs(dpy),
-                        Math.abs(dnz),
-                        Math.abs(dpz),
-                    ];
-                    switch(collDir.indexOf(Math.min.apply(null, collDir))) {
-                        case 0:
-                            camera.position.x += dnx; 
-                            break;
-                        case 1:
-                            camera.position.x -= dpx;
-                            break;
-                        case 2:
-                            camera.position.y += dny;
-                            break;
-                        case 3:
-                            camera.position.y -= dpy;
-                            break;
-                        case 4:
-                            camera.position.z += dnz;
-                            break;
-                        case 5:
-                            camera.position.z -= dpz;
-                            break;
+            if (by === boxMin.y || by === boxMin.y + 14) {
+                for (let bx = boxMin.x, mx = bx + 6; bx < mx; bx++) {
+                    for (let bz = boxMin.z, mz = bz + 6; bz < mz; bz++) {
+                        if (!isCollision(bx, by, bz)) continue;
+                        collision(bx, by, bz);
+                        return;
                     }
-                    break;
+                }
+            }
+            else {
+                for (let bx = boxMin.x, mx = bx + 6; bx < mx; bx++) {
+                    if (bx === boxMin.x || bx === boxMin.x + 5) {
+                        for (let bz = boxMin.z, mz = bz + 6; bz < mz; bz++) {
+                            if (!isCollision(bx, by, bz)) continue;
+                            collision(bx, by, bz);
+                            return;
+                        }
+                    }
+                    else {
+                        const bz = boxMin.z;
+                        if (isCollision(bx, by, bz)) {
+                            collision(bx, by, bz);
+                            return;
+                        }
+                        if (isCollision(bx, by, bz + 5)) {
+                            collision(bx, by, bz + 5);
+                            return;
+                        }
+                    }
                 }
             }
         }
