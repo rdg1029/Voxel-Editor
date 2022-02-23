@@ -249,7 +249,36 @@ function onWindowLoaded() {
         pointerLockControls.lock();
     });
     const box = new THREE.Box3();
-    const boxSize = new THREE.Vector3(6, 14, 6);
+    const BOX_WIDTH = 6, BOX_HEIGHT = 14, BOX_DEPTH = 6;
+    const boxSize = new THREE.Vector3(BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH);
+    const prevPos = new THREE.Vector3().copy(camera.position);
+    function sweptAABB(voxelX, voxelY, voxelZ) {
+        const velocity = camera.position.clone().sub(prevPos);
+
+        const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
+        const xInvExit = velocity.x > 0 ? (voxelX + 1) - box.min.x : voxelX - box.max.x;
+        const yInvEntry = velocity.y > 0 ? voxelY - box.max.y : (voxelY + 1) - box.min.y;
+        const yInvExit = velocity.y > 0 ? (voxelY + 1) - box.min.y : voxelY - box.max.y;
+        const zInvEntry = velocity.z > 0 ? voxelZ - box.max.z : (voxelZ + 1) - box.min.z;
+        const zInvExit = velocity.z > 0 ? (voxelZ + 1) - box.min.z : voxelZ - box.max.z;
+
+        const xEntry = velocity.x == 0 ? -Infinity : xInvEntry / velocity.x;
+        const xExit = velocity.x == 0 ? Infinity : xInvExit / velocity.x;
+        const yEntry = velocity.y == 0 ? -Infinity : yInvEntry / velocity.y;
+        const yExit = velocity.y == 0 ? Infinity : yInvExit / velocity.y;
+        const zEntry = velocity.z == 0 ? -Infinity : zInvEntry / velocity.z;
+        const zExit = velocity.z == 0 ? Infinity : zInvExit / velocity.z;
+
+        const entryTime = Math.max(xEntry, yEntry, zEntry);
+        const exitTime = Math.min(xExit, yExit, zExit);
+        //if no collision
+        if (entryTime > exitTime || xEntry < 0 && yEntry < 0 && zEntry < 0 || xEntry > 1 || yEntry > 1 || zEntry > 1) {
+            return 1;
+        }
+        else {
+            return entryTime;
+        }
+    }
     function isCollision(x, y, z) {
         const chunkId = world.computeChunkId(x, y, z);
         if (!world.chunks.has(chunkId)) return false;
@@ -396,6 +425,7 @@ function onWindowLoaded() {
         const speed = clock.getDelta() * 16;
         updateControls(speed);
         detectCollision(speed);
+        prevPos.copy(camera.position);
         renderer.render(scene, camera);
     });
     
