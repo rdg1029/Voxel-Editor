@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 import { World } from './world';
 import { Palette } from './palette';
+import { CameraHelper } from 'three';
 
 const CHUNK_SIZE = 32;
 const BLOCK_SIZE = 8;
@@ -249,12 +250,10 @@ function onWindowLoaded() {
         pointerLockControls.lock();
     });
     const box = new THREE.Box3();
-    const BOX_WIDTH = 6, BOX_HEIGHT = 14, BOX_DEPTH = 6;
-    const boxSize = new THREE.Vector3(BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH);
+    const boxSize = new THREE.Vector3(6, 14, 6);
     const prevPos = new THREE.Vector3().copy(camera.position);
-    function sweptAABB(voxelX, voxelY, voxelZ) {
-        const velocity = camera.position.clone().sub(prevPos);
-
+    const collNormal = new THREE.Vector3();
+    function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
         const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
         const xInvExit = velocity.x > 0 ? (voxelX + 1) - box.min.x : voxelX - box.max.x;
         const yInvEntry = velocity.y > 0 ? voxelY - box.max.y : (voxelY + 1) - box.min.y;
@@ -276,6 +275,30 @@ function onWindowLoaded() {
             return 1;
         }
         else {
+            if (xEntry > yEntry && xEntry > zEntry) {
+                if (xInvEntry < 0) {
+                    collNormal.set(1, 0, 0);
+                }
+                else {
+                    collNormal.set(-1, 0, 0);
+                }
+            }
+            else if (yEntry > xEntry && yEntry > zEntry) {
+                if (yInvEntry < 0) {
+                    collNormal.set(0, 1, 0);
+                }
+                else {
+                    collNormal.set(0, -1, 0);
+                }
+            }
+            else if (zEntry > xEntry && zEntry > yEntry) {
+                if (zInvEntry < 0) {
+                    collNormal.set(0, 0, 1);
+                }
+                else {
+                    collNormal.set(0, 0, -1);
+                }
+            }
             return entryTime;
         }
     }
@@ -326,41 +349,22 @@ function onWindowLoaded() {
                 break;
         }
     }
-    function detectCollision(speed) {
+    function detectCollision() {
         const boxCenter = camera.position.clone();
+        const velocity = camera.position.clone().sub(prevPos);
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
         const boxMin = box.min.clone().floor();
-        for (let by = boxMin.y, my = by + 14; by < my; by++) {
-            if (by === boxMin.y || by === boxMin.y + 14) {
-                for (let bx = boxMin.x, mx = bx + 6; bx < mx; bx++) {
-                    for (let bz = boxMin.z, mz = bz + 6; bz < mz; bz++) {
-                        if (!isCollision(bx, by, bz)) continue;
-                        collision(bx, by, bz);
-                        return;
-                    }
-                }
-            }
-            else {
-                for (let bx = boxMin.x, mx = bx + 6; bx < mx; bx++) {
-                    if (bx === boxMin.x || bx === boxMin.x + 5) {
-                        for (let bz = boxMin.z, mz = bz + 6; bz < mz; bz++) {
-                            if (!isCollision(bx, by, bz)) continue;
-                            collision(bx, by, bz);
-                            return;
-                        }
-                    }
-                    else {
-                        const bz = boxMin.z;
-                        if (isCollision(bx, by, bz)) {
-                            collision(bx, by, bz);
-                            return;
-                        }
-                        if (isCollision(bx, by, bz + 5)) {
-                            collision(bx, by, bz + 5);
-                            return;
-                        }
-                    }
+        for (let by = boxMin.y - 1, my = by + 17; by < my; by++) {
+            for (let bx = boxMin.x - 1, mx = bx + 9; bx < mx; bx++) {
+                for (let bz = boxMin.z - 1, mz = bz + 9; bz < mz; bz++) {
+                    if (!isCollision(bx, by, bz)) continue;
+                    const collisionTime = sweptAABB(bx, by, bz, velocity);
+                    if (collisionTime === 1) continue;
+                    const displacement =  velocity.clone().multiplyScalar(collisionTime);
+                    camera.position.copy(prevPos.add(displacement));
+                    console.log('collided', collNormal);
+                    return;
                 }
             }
         }
@@ -424,7 +428,7 @@ function onWindowLoaded() {
     renderer.setAnimationLoop(() => {
         const speed = clock.getDelta() * 16;
         updateControls(speed);
-        detectCollision(speed);
+        detectCollision();
         prevPos.copy(camera.position);
         renderer.render(scene, camera);
     });
