@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+// import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import { PointerLockControls } from './PointerLockControls';
 import { World } from './world';
 import { Palette } from './palette';
 import { CameraHelper } from 'three';
@@ -82,11 +83,12 @@ function onWindowLoaded() {
             pointerLockControls.moveRight(speed);
         }
         if (movKey.get('Space')) {
-            camera.position.y += speed;
+            pointerLockControls.direction.y += speed;
         }
         if (movKey.get('ShiftLeft')) {
-            camera.position.y -= speed;
+            pointerLockControls.direction.y -= speed;
         }
+        return pointerLockControls.direction;
     }
     // Update voxel & chunk functions
     function updateVoxelGeometry(x, y, z) {
@@ -249,10 +251,34 @@ function onWindowLoaded() {
     renderer.domElement.addEventListener('click', () => {
         pointerLockControls.lock();
     });
+
+    //Collision
     const box = new THREE.Box3();
     const boxSize = new THREE.Vector3(6, 14, 6);
     const prevPos = new THREE.Vector3().copy(camera.position);
     const collNormal = new THREE.Vector3();
+
+    function getCollidableVoxels() {
+        const list = [];
+        const boxCenter = camera.position.clone();
+        boxCenter.y -= 5;
+        box.setFromCenterAndSize(boxCenter, boxSize);
+        const minX = Math.floor(box.min.x) - 1;
+        const maxX = Math.ceil(box.max.x) + 1;
+        const minY = Math.floor(box.min.y) - 1;
+        const maxY = Math.ceil(box.max.y) + 1;
+        const minZ = Math.floor(box.min.z) - 1;
+        const maxZ = Math.ceil(box.max.z) + 1;
+        for (let y = minY; y < maxY; y++) {
+            for (let x = minX; x < maxX; x++) {
+                for (let z = minZ; z < maxZ; z++) {
+                    if (world.getVoxel(x, y, z) === 0) continue;
+                    list.push([x, y, z]);
+                }
+            }
+        }
+        return list;
+    }
     function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
         const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
         const xInvExit = velocity.x > 0 ? (voxelX + 1) - box.min.x : voxelX - box.max.x;
@@ -271,12 +297,12 @@ function onWindowLoaded() {
         const entryTime = Math.max(xEntry, yEntry, zEntry);
         const exitTime = Math.min(xExit, yExit, zExit);
         //if no collision
-        if (entryTime > exitTime || xEntry < 0 && yEntry < 0 && zEntry < 0 || xEntry > 1 || yEntry > 1 || zEntry > 1) {
+        if (entryTime > exitTime || entryTime < 0) {
             return 1;
         }
         else {
             if (xEntry > yEntry && xEntry > zEntry) {
-                if (xInvEntry < 0) {
+                if (velocity.x < 0) {
                     collNormal.set(1, 0, 0);
                 }
                 else {
@@ -284,15 +310,15 @@ function onWindowLoaded() {
                 }
             }
             else if (yEntry > xEntry && yEntry > zEntry) {
-                if (yInvEntry < 0) {
+                if (velocity.y < 0) {
                     collNormal.set(0, 1, 0);
                 }
                 else {
                     collNormal.set(0, -1, 0);
                 }
             }
-            else if (zEntry > xEntry && zEntry > yEntry) {
-                if (zInvEntry < 0) {
+            else {
+                if (velocity.z < 0) {
                     collNormal.set(0, 0, 1);
                 }
                 else {
@@ -302,71 +328,73 @@ function onWindowLoaded() {
             return entryTime;
         }
     }
-    function isCollision(x, y, z) {
-        const chunkId = world.computeChunkId(x, y, z);
-        if (!world.chunks.has(chunkId)) return false;
-        const chunk = world.chunks.get(chunkId);
-        const offset = world.computeVoxelOffset(x, y, z);
-        if (chunk[offset] === 0) return false;
-        return true;
-    }
-    function getCollisionIndex(dir) {
-        let min = 0;
-        for (let i = 0; i < 6; i++) {
-            if (dir[min] > dir[i]) {
-                min = i;
-            }
-        }
-        return min;
-    }
-    function collision(bx, by, bz) {
-        const dir = [
-            bx + 1 - box.min.x,    // left
-            box.max.x - bx,        // right
-            by + 1 - box.min.y,    // bottom
-            box.max.y - by,        // top
-            bz + 1 - box.min.z,    // front
-            box.max.z - bz,        // back
-        ];
-        switch(getCollisionIndex(dir)) {
-            case 0:
-                camera.position.x += dir[0];
-                break;
-            case 1:
-                camera.position.x -= dir[1];
-                break;
-            case 2:
-                camera.position.y += dir[2];
-                break;
-            case 3:
-                camera.position.y -= dir[3];
-                break;
-            case 4:
-                camera.position.z += dir[4];
-                break;
-            case 5:
-                camera.position.z -= dir[5];
-                break;
-        }
-    }
+    /*
     function detectCollision() {
         const boxCenter = camera.position.clone();
-        const velocity = camera.position.clone().sub(prevPos);
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
         const boxMin = box.min.clone().floor();
         for (let by = boxMin.y - 1, my = by + 17; by < my; by++) {
             for (let bx = boxMin.x - 1, mx = bx + 9; bx < mx; bx++) {
                 for (let bz = boxMin.z - 1, mz = bz + 9; bz < mz; bz++) {
-                    if (!isCollision(bx, by, bz)) continue;
-                    const collisionTime = sweptAABB(bx, by, bz, velocity);
-                    if (collisionTime === 1) continue;
-                    const displacement =  velocity.clone().multiplyScalar(collisionTime);
-                    camera.position.copy(prevPos.add(displacement));
-                    console.log('collided', collNormal);
-                    return;
+                    if (world.getVoxel(bx, by, bz) === 0) continue;
+                    const dnx = bx + 1 - box.min.x;
+                    const dpx = box.max.x - bx;
+                    const dny = by + 1 - box.min.y;
+                    const dpy = box.max.y - by;
+                    const dnz = bz + 1 - box.min.z;
+                    const dpz = box.max.z - bz;
+                    const collDir = [
+                        Math.abs(dnx),
+                        Math.abs(dpx),
+                        Math.abs(dny),
+                        Math.abs(dpy),
+                        Math.abs(dnz),
+                        Math.abs(dpz),
+                    ];
+                    switch(collDir.indexOf(Math.min.apply(null, collDir))) {
+                        case 0:
+                            camera.position.x += dnx; 
+                            break;
+                        case 1:
+                            camera.position.x -= dpx;
+                            break;
+                        case 2:
+                            camera.position.y += dny;
+                            break;
+                        case 3:
+                            camera.position.y -= dpy;
+                            break;
+                        case 4:
+                            camera.position.z += dnz;
+                            break;
+                        case 5:
+                            camera.position.z -= dpz;
+                            break;
+                    }
                 }
             }
+        }
+    }
+    */
+    function detectCollision(dir) {
+        const voxels = getCollidableVoxels();
+        const velocity = dir.clone().sub(camera.position);
+        let collisionTime = 1;
+        for (let i = 0, j = voxels.length; i < j; i++) {
+            const entryTime = sweptAABB(...voxels[i], velocity);
+            if (entryTime === 1) continue;
+            if (entryTime < collisionTime) {
+                collisionTime = entryTime;
+            }
+        }
+        const remainingTime = 1 - collisionTime;
+        const displacement =  velocity.clone().multiplyScalar(collisionTime);
+        camera.position.add(displacement);
+        if (collisionTime < 1) {
+            const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
+            camera.position.x += dotprod * collNormal.z;
+            camera.position.z += dotprod * collNormal.x;
         }
     }
     window.addEventListener('keydown', e => {
@@ -427,8 +455,8 @@ function onWindowLoaded() {
 
     renderer.setAnimationLoop(() => {
         const speed = clock.getDelta() * 16;
-        updateControls(speed);
-        detectCollision();
+        const dir = updateControls(speed);
+        detectCollision(dir);
         prevPos.copy(camera.position);
         renderer.render(scene, camera);
     });
