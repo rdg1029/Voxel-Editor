@@ -70,6 +70,7 @@ function onWindowLoaded() {
     const palette = new Palette();
 
     function updateControls(speed) {
+        pointerLockControls.direction.copy(camera.position);
         if (movKey.get('KeyW')) {
             pointerLockControls.moveForward(speed);
         }
