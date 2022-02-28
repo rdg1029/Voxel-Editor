@@ -255,8 +255,9 @@ function onWindowLoaded() {
 
     //Collision
     const box = new THREE.Box3();
+    const boxHelper = new THREE.Box3Helper(box);
+    scene.add(boxHelper);
     const boxSize = new THREE.Vector3(6, 14, 6);
-    const prevPos = new THREE.Vector3().copy(camera.position);
     const collNormal = new THREE.Vector3();
 
     function getCollidableVoxels() {
@@ -264,6 +265,7 @@ function onWindowLoaded() {
         const boxCenter = camera.position.clone();
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
+        boxHelper.updateMatrixWorld(true);
         const minX = Math.floor(box.min.x) - 1;
         const maxX = Math.ceil(box.max.x) + 1;
         const minY = Math.floor(box.min.y) - 1;
@@ -390,13 +392,15 @@ function onWindowLoaded() {
             }
         }
         const remainingTime = 1 - collisionTime;
-        const displacement =  velocity.clone().multiplyScalar(collisionTime);
+        const displacement =  velocity.multiplyScalar(collisionTime);
         camera.position.add(displacement);
+        /*
         if (collisionTime < 1) {
             const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
             camera.position.x += dotprod * collNormal.z;
             camera.position.z += dotprod * collNormal.x;
         }
+        */
     }
     window.addEventListener('keydown', e => {
         switch(e.code) {
@@ -458,7 +462,6 @@ function onWindowLoaded() {
         const speed = clock.getDelta() * 16;
         const dir = updateControls(speed);
         detectCollision(dir);
-        prevPos.copy(camera.position);
         renderer.render(scene, camera);
     });
     
