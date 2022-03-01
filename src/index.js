@@ -260,18 +260,18 @@ function onWindowLoaded() {
     const boxSize = new THREE.Vector3(6, 14, 6);
     const collNormal = new THREE.Vector3();
 
-    function getCollidableVoxels() {
+    function getCollidableVoxels(velocity) {
         const list = [];
         const boxCenter = camera.position.clone();
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
         boxHelper.updateMatrixWorld(true);
-        const minX = Math.floor(box.min.x) - 1;
-        const maxX = Math.ceil(box.max.x) + 1;
-        const minY = Math.floor(box.min.y) - 1;
-        const maxY = Math.ceil(box.max.y) + 1;
-        const minZ = Math.floor(box.min.z) - 1;
-        const maxZ = Math.ceil(box.max.z) + 1;
+        const minX = velocity.x > 0 ? Math.floor(box.min.x) : Math.floor(box.min.x + velocity.x);
+        const maxX = velocity.x > 0 ? Math.ceil(box.max.x + velocity.x) : Math.ceil(box.max.x);
+        const minY = velocity.y > 0 ? Math.floor(box.min.y) : Math.floor(box.min.y + velocity.y);
+        const maxY = velocity.y > 0 ? Math.ceil(box.max.y + velocity.y) : Math.ceil(box.max.y);
+        const minZ = velocity.z > 0 ? Math.floor(box.min.z) : Math.floor(box.min.z + velocity.z);
+        const maxZ = velocity.z > 0 ? Math.ceil(box.max.z + velocity.z) : Math.ceil(box.max.z);
         for (let y = minY; y < maxY; y++) {
             for (let x = minX; x < maxX; x++) {
                 for (let z = minZ; z < maxZ; z++) {
@@ -381,8 +381,8 @@ function onWindowLoaded() {
     }
     */
     function detectCollision(dir) {
-        const voxels = getCollidableVoxels();
         const velocity = dir.clone().sub(camera.position);
+        const voxels = getCollidableVoxels(velocity);
         let collisionTime = 1;
         for (let i = 0, j = voxels.length; i < j; i++) {
             const entryTime = sweptAABB(...voxels[i], velocity);
@@ -394,13 +394,11 @@ function onWindowLoaded() {
         const remainingTime = 1 - collisionTime;
         const displacement =  velocity.multiplyScalar(collisionTime);
         camera.position.add(displacement);
-        /*
         if (collisionTime < 1) {
             const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
             camera.position.x += dotprod * collNormal.z;
             camera.position.z += dotprod * collNormal.x;
         }
-        */
     }
     window.addEventListener('keydown', e => {
         switch(e.code) {
