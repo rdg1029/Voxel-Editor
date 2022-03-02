@@ -392,7 +392,7 @@ function onWindowLoaded() {
             }
         }
         const remainingTime = 1 - collisionTime;
-        const displacement =  velocity.multiplyScalar(collisionTime);
+        const displacement =  velocity.clone().multiplyScalar(collisionTime);
         camera.position.add(displacement);
         if (collisionTime < 1) {
             const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
