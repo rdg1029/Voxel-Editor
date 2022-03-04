@@ -304,29 +304,15 @@ function onWindowLoaded() {
             return 1;
         }
         else {
-            if (xEntry > yEntry && xEntry > zEntry) {
-                if (velocity.x < 0) {
-                    collNormal.set(1, 0, 0);
-                }
-                else {
-                    collNormal.set(-1, 0, 0);
-                }
-            }
-            else if (yEntry > xEntry && yEntry > zEntry) {
-                if (velocity.y < 0) {
-                    collNormal.set(0, 1, 0);
-                }
-                else {
-                    collNormal.set(0, -1, 0);
-                }
+            if (xEntry > yEntry) {
+                collNormal.x = xEntry > zEntry ? -Math.sign(velocity.x) : 0;
+                collNormal.y = 0;
+                collNormal.z = xEntry > zEntry ? 0 : -Math.sign(velocity.z);
             }
             else {
-                if (velocity.z < 0) {
-                    collNormal.set(0, 0, 1);
-                }
-                else {
-                    collNormal.set(0, 0, -1);
-                }
+                collNormal.x = 0;
+                collNormal.y = yEntry > zEntry ? -Math.sign(velocity.y) : 0;
+                collNormal.z = yEntry > zEntry ? 0 : -Math.sign(velocity.z);
             }
             return entryTime;
         }
