@@ -266,12 +266,12 @@ function onWindowLoaded() {
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
         boxHelper.updateMatrixWorld(true);
-        const minX = velocity.x > 0 ? Math.floor(box.min.x) : Math.floor(box.min.x + velocity.x);
-        const maxX = velocity.x > 0 ? Math.ceil(box.max.x + velocity.x) : Math.ceil(box.max.x);
-        const minY = velocity.y > 0 ? Math.floor(box.min.y) : Math.floor(box.min.y + velocity.y);
-        const maxY = velocity.y > 0 ? Math.ceil(box.max.y + velocity.y) : Math.ceil(box.max.y);
-        const minZ = velocity.z > 0 ? Math.floor(box.min.z) : Math.floor(box.min.z + velocity.z);
-        const maxZ = velocity.z > 0 ? Math.ceil(box.max.z + velocity.z) : Math.ceil(box.max.z);
+        const minX = Math.floor(box.min.x + velocity.x);
+        const maxX = Math.ceil(box.max.x + velocity.x);
+        const minY = Math.floor(box.min.y + velocity.y);
+        const maxY = Math.ceil(box.max.y + velocity.y);
+        const minZ = Math.floor(box.min.z + velocity.z);
+        const maxZ = Math.ceil(box.max.z + velocity.z);
         for (let y = minY; y < maxY; y++) {
             for (let x = minX; x < maxX; x++) {
                 for (let z = minZ; z < maxZ; z++) {
@@ -290,12 +290,12 @@ function onWindowLoaded() {
         const zInvEntry = velocity.z > 0 ? voxelZ - box.max.z : (voxelZ + 1) - box.min.z;
         const zInvExit = velocity.z > 0 ? (voxelZ + 1) - box.min.z : voxelZ - box.max.z;
 
-        const xEntry = velocity.x == 0 ? -Infinity : xInvEntry / velocity.x;
-        const xExit = velocity.x == 0 ? Infinity : xInvExit / velocity.x;
-        const yEntry = velocity.y == 0 ? -Infinity : yInvEntry / velocity.y;
-        const yExit = velocity.y == 0 ? Infinity : yInvExit / velocity.y;
-        const zEntry = velocity.z == 0 ? -Infinity : zInvEntry / velocity.z;
-        const zExit = velocity.z == 0 ? Infinity : zInvExit / velocity.z;
+        const xEntry = velocity.x === 0 ? -Infinity : xInvEntry / velocity.x;
+        const xExit = velocity.x === 0 ? Infinity : xInvExit / velocity.x;
+        const yEntry = velocity.y === 0 ? -Infinity : yInvEntry / velocity.y;
+        const yExit = velocity.y === 0 ? Infinity : yInvExit / velocity.y;
+        const zEntry = velocity.z === 0 ? -Infinity : zInvEntry / velocity.z;
+        const zExit = velocity.z === 0 ? Infinity : zInvExit / velocity.z;
 
         const entryTime = Math.max(xEntry, yEntry, zEntry);
         const exitTime = Math.min(xExit, yExit, zExit);
