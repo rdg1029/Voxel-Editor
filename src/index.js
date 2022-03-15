@@ -368,13 +368,27 @@ function onWindowLoaded() {
     */
     function detectCollision(dir) {
         const velocity = dir.clone().sub(camera.position);
-        const voxels = getCollidableVoxels(velocity);
         let collisionTime = 1;
-        for (let i = 0, j = voxels.length; i < j; i++) {
-            const entryTime = sweptAABB(...voxels[i], velocity);
-            if (entryTime === 1) continue;
-            if (entryTime < collisionTime) {
-                collisionTime = entryTime;
+
+        const boxCenter = camera.position.clone();
+        boxCenter.y -= 5;
+        box.setFromCenterAndSize(boxCenter, boxSize);
+        const minX = Math.floor(box.min.x + velocity.x);
+        const maxX = Math.ceil(box.max.x + velocity.x);
+        const minY = Math.floor(box.min.y + velocity.y);
+        const maxY = Math.ceil(box.max.y + velocity.y);
+        const minZ = Math.floor(box.min.z + velocity.z);
+        const maxZ = Math.ceil(box.max.z + velocity.z);
+        for (let y = minY; y < maxY; y++) {
+            for (let x = minX; x < maxX; x++) {
+                for (let z = minZ; z < maxZ; z++) {
+                    if (world.getVoxel(x, y, z) === 0) continue;
+                    const entryTime = sweptAABB(x, y, z, velocity);
+                    if (entryTime === 1) continue;
+                    if (entryTime < collisionTime) {
+                        collisionTime = entryTime;
+                    } 
+                }
             }
         }
         const remainingTime = 1 - collisionTime;
@@ -457,8 +471,9 @@ function onWindowLoaded() {
     const load = document.getElementById('load');
     save.addEventListener('click', () => {
         const zip = new JSZip();
+        const dirChunks = zip.folder('chunks');
         world.chunks.forEach((data, id) => {
-            zip.file(id, data);
+            dirChunks.file(id, data);
         });
         zip.generateAsync({type:'blob'})
         .then(content => {
@@ -476,7 +491,7 @@ function onWindowLoaded() {
         const zip = new JSZip();
         zip.loadAsync(load.files[0]).then(() => {
             clearAllChunks();
-            zip.forEach((chunk, file) => {
+            zip.folder('chunks').forEach((chunk, file) => {
                 file.async('uint8array').then(data => {
                     world.chunks.set(chunk, data);
                     const pos = chunk.split(',');
