@@ -10,6 +10,8 @@ const BLOCK_SIZE = 8;
 const CHUNK_SIZE_BIT = Math.log2(CHUNK_SIZE);
 const BLOCK_SIZE_BIT = Math.log2(BLOCK_SIZE);
 
+const EPSILON = 0.001;
+
 let isVoxel = true;
 
 function onWindowLoaded() {
@@ -287,52 +289,47 @@ function onWindowLoaded() {
             return 1;
         }
         else {
-            if (xEntry > yEntry) {
-                normal[0] = xEntry > zEntry ? -Math.sign(velocity.x) : 0;
-                normal[1] = 0;
-                normal[2] = xEntry > zEntry ? 0 : -Math.sign(velocity.z);
-            }
-            else {
-                normal[0] = 0;
-                normal[1] = yEntry > zEntry ? -Math.sign(velocity.y) : 0;
-                normal[2] = yEntry > zEntry ? 0 : -Math.sign(velocity.z);
-            }
+            normal[0] = entryTime === xEntry ? -Math.sign(velocity.x) : 0;
+            normal[1] = entryTime === yEntry ? -Math.sign(velocity.y) : 0;
+            normal[2] = entryTime === zEntry ? -Math.sign(velocity.z) : 0;
             return {entryTime, normal};
         }
     }
     function detectCollision(dir) {
         const collNormal = new THREE.Vector3();
-        const velocity = dir.clone().sub(camera.position);
         let collisionTime = 1;
-        updateBox();
 
-        const minX = Math.floor(box.min.x + velocity.x);
-        const maxX = Math.ceil(box.max.x + velocity.x);
-        const minY = Math.floor(box.min.y + velocity.y);
-        const maxY = Math.ceil(box.max.y + velocity.y);
-        const minZ = Math.floor(box.min.z + velocity.z);
-        const maxZ = Math.ceil(box.max.z + velocity.z);
-        for (let y = minY; y < maxY; y++) {
-            for (let x = minX; x < maxX; x++) {
-                for (let z = minZ; z < maxZ; z++) {
-                    if (world.getVoxel(x, y, z) === 0) continue;
-                    const {entryTime, normal} = sweptAABB(x, y, z, velocity);
-                    if (entryTime === 1) continue;
-                    if (entryTime < collisionTime) {
-                        collisionTime = entryTime;
-                        collNormal.fromArray(normal);
-                    } 
+        for (let i = 0; i < 3; i++) {
+            updateBox();
+            const velocity = dir.clone().sub(camera.position);
+
+            const minX = Math.floor(box.min.x + velocity.x);
+            const maxX = Math.ceil(box.max.x + velocity.x);
+            const minY = Math.floor(box.min.y + velocity.y);
+            const maxY = Math.ceil(box.max.y + velocity.y);
+            const minZ = Math.floor(box.min.z + velocity.z);
+            const maxZ = Math.ceil(box.max.z + velocity.z);
+            for (let y = minY; y < maxY; y++) {
+                for (let x = minX; x < maxX; x++) {
+                    for (let z = minZ; z < maxZ; z++) {
+                        if (world.getVoxel(x, y, z) === 0) continue;
+                        const {entryTime, normal} = sweptAABB(x, y, z, velocity);
+                        if (entryTime === 1) continue;
+                        if (entryTime < collisionTime) {
+                            collisionTime = entryTime;
+                            collNormal.fromArray(normal);
+                        } 
+                    }
                 }
             }
-        }
-        collisionTime -= 0.001;
-        const remainingTime = 1 - collisionTime;
-        const displacement =  velocity.clone().multiplyScalar(collisionTime);
-        camera.position.add(displacement);
-        if (collisionTime < 1) {
-            const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
-            camera.position.x += dotprod * collNormal.z;
-            camera.position.z += dotprod * collNormal.x;
+            const remainingTime = 1 - collisionTime + EPSILON;
+            const displacement =  velocity.clone().multiplyScalar(collisionTime - EPSILON);
+            camera.position.add(displacement);
+            if (collisionTime < 1) {
+                const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
+                camera.position.x += dotprod * collNormal.z;
+                camera.position.z += dotprod * collNormal.x;
+            }
         }
         updateBox();
     }
