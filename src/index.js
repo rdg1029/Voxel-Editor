@@ -258,7 +258,6 @@ function onWindowLoaded() {
     const boxHelper = new THREE.Box3Helper(box);
     scene.add(boxHelper);
     const boxSize = new THREE.Vector3(6, 14, 6);
-    const collNormal = new THREE.Vector3();
 
     function updateBox() {
         const boxCenter = camera.position.clone();
@@ -266,6 +265,7 @@ function onWindowLoaded() {
         box.setFromCenterAndSize(boxCenter, boxSize);
     }
     function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
+        const normal = [0, 0, 0];
         const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
         const xInvExit = velocity.x > 0 ? (voxelX + 1) - box.min.x : voxelX - box.max.x;
         const yInvEntry = velocity.y > 0 ? voxelY - box.max.y : (voxelY + 1) - box.min.y;
@@ -288,19 +288,20 @@ function onWindowLoaded() {
         }
         else {
             if (xEntry > yEntry) {
-                collNormal.x = xEntry > zEntry ? -Math.sign(velocity.x) : 0;
-                collNormal.y = 0;
-                collNormal.z = xEntry > zEntry ? 0 : -Math.sign(velocity.z);
+                normal[0] = xEntry > zEntry ? -Math.sign(velocity.x) : 0;
+                normal[1] = 0;
+                normal[2] = xEntry > zEntry ? 0 : -Math.sign(velocity.z);
             }
             else {
-                collNormal.x = 0;
-                collNormal.y = yEntry > zEntry ? -Math.sign(velocity.y) : 0;
-                collNormal.z = yEntry > zEntry ? 0 : -Math.sign(velocity.z);
+                normal[0] = 0;
+                normal[1] = yEntry > zEntry ? -Math.sign(velocity.y) : 0;
+                normal[2] = yEntry > zEntry ? 0 : -Math.sign(velocity.z);
             }
-            return entryTime;
+            return {entryTime, normal};
         }
     }
     function detectCollision(dir) {
+        const collNormal = new THREE.Vector3();
         const velocity = dir.clone().sub(camera.position);
         let collisionTime = 1;
         updateBox();
@@ -315,10 +316,11 @@ function onWindowLoaded() {
             for (let x = minX; x < maxX; x++) {
                 for (let z = minZ; z < maxZ; z++) {
                     if (world.getVoxel(x, y, z) === 0) continue;
-                    const entryTime = sweptAABB(x, y, z, velocity);
+                    const {entryTime, normal} = sweptAABB(x, y, z, velocity);
                     if (entryTime === 1) continue;
                     if (entryTime < collisionTime) {
                         collisionTime = entryTime;
+                        collNormal.fromArray(normal);
                     } 
                 }
             }
