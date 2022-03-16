@@ -260,27 +260,10 @@ function onWindowLoaded() {
     const boxSize = new THREE.Vector3(6, 14, 6);
     const collNormal = new THREE.Vector3();
 
-    function getCollidableVoxels(velocity) {
-        const list = [];
+    function updateBox() {
         const boxCenter = camera.position.clone();
         boxCenter.y -= 5;
         box.setFromCenterAndSize(boxCenter, boxSize);
-        boxHelper.updateMatrixWorld(true);
-        const minX = Math.floor(box.min.x + velocity.x);
-        const maxX = Math.ceil(box.max.x + velocity.x);
-        const minY = Math.floor(box.min.y + velocity.y);
-        const maxY = Math.ceil(box.max.y + velocity.y);
-        const minZ = Math.floor(box.min.z + velocity.z);
-        const maxZ = Math.ceil(box.max.z + velocity.z);
-        for (let y = minY; y < maxY; y++) {
-            for (let x = minX; x < maxX; x++) {
-                for (let z = minZ; z < maxZ; z++) {
-                    if (world.getVoxel(x, y, z) === 0) continue;
-                    list.push([x, y, z]);
-                }
-            }
-        }
-        return list;
     }
     function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
         const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
@@ -317,62 +300,11 @@ function onWindowLoaded() {
             return entryTime;
         }
     }
-    /*
-    function detectCollision() {
-        const boxCenter = camera.position.clone();
-        boxCenter.y -= 5;
-        box.setFromCenterAndSize(boxCenter, boxSize);
-        const boxMin = box.min.clone().floor();
-        for (let by = boxMin.y - 1, my = by + 17; by < my; by++) {
-            for (let bx = boxMin.x - 1, mx = bx + 9; bx < mx; bx++) {
-                for (let bz = boxMin.z - 1, mz = bz + 9; bz < mz; bz++) {
-                    if (world.getVoxel(bx, by, bz) === 0) continue;
-                    const dnx = bx + 1 - box.min.x;
-                    const dpx = box.max.x - bx;
-                    const dny = by + 1 - box.min.y;
-                    const dpy = box.max.y - by;
-                    const dnz = bz + 1 - box.min.z;
-                    const dpz = box.max.z - bz;
-                    const collDir = [
-                        Math.abs(dnx),
-                        Math.abs(dpx),
-                        Math.abs(dny),
-                        Math.abs(dpy),
-                        Math.abs(dnz),
-                        Math.abs(dpz),
-                    ];
-                    switch(collDir.indexOf(Math.min.apply(null, collDir))) {
-                        case 0:
-                            camera.position.x += dnx; 
-                            break;
-                        case 1:
-                            camera.position.x -= dpx;
-                            break;
-                        case 2:
-                            camera.position.y += dny;
-                            break;
-                        case 3:
-                            camera.position.y -= dpy;
-                            break;
-                        case 4:
-                            camera.position.z += dnz;
-                            break;
-                        case 5:
-                            camera.position.z -= dpz;
-                            break;
-                    }
-                }
-            }
-        }
-    }
-    */
     function detectCollision(dir) {
         const velocity = dir.clone().sub(camera.position);
         let collisionTime = 1;
+        updateBox();
 
-        const boxCenter = camera.position.clone();
-        boxCenter.y -= 5;
-        box.setFromCenterAndSize(boxCenter, boxSize);
         const minX = Math.floor(box.min.x + velocity.x);
         const maxX = Math.ceil(box.max.x + velocity.x);
         const minY = Math.floor(box.min.y + velocity.y);
@@ -391,6 +323,7 @@ function onWindowLoaded() {
                 }
             }
         }
+        collisionTime -= 0.001;
         const remainingTime = 1 - collisionTime;
         const displacement =  velocity.clone().multiplyScalar(collisionTime);
         camera.position.add(displacement);
@@ -399,6 +332,7 @@ function onWindowLoaded() {
             camera.position.x += dotprod * collNormal.z;
             camera.position.z += dotprod * collNormal.x;
         }
+        updateBox();
     }
     window.addEventListener('keydown', e => {
         switch(e.code) {
