@@ -267,7 +267,7 @@ function onWindowLoaded() {
         box.setFromCenterAndSize(boxCenter, boxSize);
     }
     function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
-        const normal = [0, 0, 0];
+        const normal = new Int8Array([0, 0, 0]);
         const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
         const xInvExit = velocity.x > 0 ? (voxelX + 1) - box.min.x : voxelX - box.max.x;
         const yInvEntry = velocity.y > 0 ? voxelY - box.max.y : (voxelY + 1) - box.min.y;
@@ -286,7 +286,8 @@ function onWindowLoaded() {
         const exitTime = Math.min(xExit, yExit, zExit);
         //if no collision
         if (entryTime > exitTime || entryTime < 0) {
-            return 1;
+            const NO_COLLISION = 1;
+            return {NO_COLLISION, normal};
         }
         else {
             normal[0] = entryTime === xEntry ? -Math.sign(velocity.x) : 0;
@@ -297,11 +298,13 @@ function onWindowLoaded() {
     }
     function detectCollision(dir) {
         const collNormal = new THREE.Vector3();
+        const velocity = dir.clone().sub(camera.position);
+        const displacement = velocity.clone();
         let collisionTime = 1;
+        updateBox();
 
         for (let i = 0; i < 3; i++) {
-            updateBox();
-            const velocity = dir.clone().sub(camera.position);
+            collisionTime = 1;
 
             const minX = Math.floor(box.min.x + velocity.x);
             const maxX = Math.ceil(box.max.x + velocity.x);
@@ -322,15 +325,28 @@ function onWindowLoaded() {
                     }
                 }
             }
-            const remainingTime = 1 - collisionTime + EPSILON;
-            const displacement =  velocity.clone().multiplyScalar(collisionTime - EPSILON);
-            camera.position.add(displacement);
-            if (collisionTime < 1) {
-                const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
-                camera.position.x += dotprod * collNormal.z;
-                camera.position.z += dotprod * collNormal.x;
+            if (collisionTime === 1) break;
+            collisionTime -= EPSILON;
+            if (collNormal.x !== 0) {
+                displacement.x *= collisionTime;
+            }
+            if (collNormal.y !== 0) {
+                displacement.y *= collisionTime;
+            }
+            if (collNormal.z !== 0) {
+                displacement.z *= collisionTime;
             }
         }
+        //const remainingTime = 1 - collisionTime + EPSILON;
+        //displacement.multiplyScalar(collisionTime - EPSILON);
+        camera.position.add(displacement);
+        /*
+        if (collisionTime < 1) {
+            const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
+            camera.position.x += dotprod * collNormal.z;
+            camera.position.z += dotprod * collNormal.x;
+        }
+        */
         updateBox();
     }
     window.addEventListener('keydown', e => {
