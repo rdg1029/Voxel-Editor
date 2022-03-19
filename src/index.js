@@ -267,7 +267,7 @@ function onWindowLoaded() {
         box.setFromCenterAndSize(boxCenter, boxSize);
     }
     function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
-        const normal = new Int8Array([0, 0, 0]);
+        const normal = new Int8Array(3);
         const xInvEntry = velocity.x > 0 ? voxelX - box.max.x : (voxelX + 1) - box.min.x;
         const xInvExit = velocity.x > 0 ? (voxelX + 1) - box.min.x : voxelX - box.max.x;
         const yInvEntry = velocity.y > 0 ? voxelY - box.max.y : (voxelY + 1) - box.min.y;
@@ -297,15 +297,14 @@ function onWindowLoaded() {
         }
     }
     function detectCollision(dir) {
-        const collNormal = new THREE.Vector3();
         const velocity = dir.clone().sub(camera.position);
         const displacement = velocity.clone();
         let collisionTime = 1;
+        let collNormal = new Int8Array(3);
         updateBox();
 
         for (let i = 0; i < 3; i++) {
             collisionTime = 1;
-
             const minX = Math.floor(box.min.x + velocity.x);
             const maxX = Math.ceil(box.max.x + velocity.x);
             const minY = Math.floor(box.min.y + velocity.y);
@@ -320,20 +319,20 @@ function onWindowLoaded() {
                         if (entryTime === 1) continue;
                         if (entryTime < collisionTime) {
                             collisionTime = entryTime;
-                            collNormal.fromArray(normal);
+                            collNormal = normal;
                         } 
                     }
                 }
             }
             if (collisionTime === 1) break;
             collisionTime -= EPSILON;
-            if (collNormal.x !== 0) {
+            if (collNormal[0] !== 0) {
                 displacement.x *= collisionTime;
             }
-            if (collNormal.y !== 0) {
+            if (collNormal[1] !== 0) {
                 displacement.y *= collisionTime;
             }
-            if (collNormal.z !== 0) {
+            if (collNormal[2] !== 0) {
                 displacement.z *= collisionTime;
             }
         }
