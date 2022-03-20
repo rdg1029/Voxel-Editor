@@ -300,11 +300,11 @@ function onWindowLoaded() {
         const velocity = dir.clone().sub(camera.position);
         const displacement = velocity.clone();
         let collisionTime = 1;
-        let collNormal = new Int8Array(3);
         updateBox();
 
         for (let i = 0; i < 3; i++) {
             collisionTime = 1;
+            let collNormal = new Int8Array(3);
             const minX = Math.floor(box.min.x + velocity.x);
             const maxX = Math.ceil(box.max.x + velocity.x);
             const minY = Math.floor(box.min.y + velocity.y);
@@ -327,25 +327,21 @@ function onWindowLoaded() {
             if (collisionTime === 1) break;
             collisionTime -= EPSILON;
             if (collNormal[0] !== 0) {
+                velocity.x = 0;
                 displacement.x *= collisionTime;
+                continue;
             }
             if (collNormal[1] !== 0) {
+                velocity.y = 0;
                 displacement.y *= collisionTime;
+                continue;
             }
             if (collNormal[2] !== 0) {
+                velocity.z = 0;
                 displacement.z *= collisionTime;
             }
         }
-        //const remainingTime = 1 - collisionTime + EPSILON;
-        //displacement.multiplyScalar(collisionTime - EPSILON);
         camera.position.add(displacement);
-        /*
-        if (collisionTime < 1) {
-            const dotprod = (velocity.x * collNormal.z + velocity.z * collNormal.x) * remainingTime;
-            camera.position.x += dotprod * collNormal.z;
-            camera.position.z += dotprod * collNormal.x;
-        }
-        */
         updateBox();
     }
     window.addEventListener('keydown', e => {
