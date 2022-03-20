@@ -259,11 +259,11 @@ function onWindowLoaded() {
     const box = new THREE.Box3();
     const boxHelper = new THREE.Box3Helper(box);
     scene.add(boxHelper);
-    const boxSize = new THREE.Vector3(6, 14, 6);
+    const boxSize = new THREE.Vector3(4, 14, 4);
 
     function updateBox() {
         const boxCenter = camera.position.clone();
-        boxCenter.y -= 5;
+        boxCenter.y -= 6;
         box.setFromCenterAndSize(boxCenter, boxSize);
     }
     function sweptAABB(voxelX, voxelY, voxelZ, velocity) {
