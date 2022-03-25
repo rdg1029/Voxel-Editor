@@ -1,8 +1,18 @@
 class WorldData {
     constructor() {
-        this.buffer = new ArrayBuffer(44);
-        this.name = new Uint8Array(this.buffer, 0, 32); // 32 bytes
-        this.spawnPoint = new Float32Array(this.buffer, 32, 3); // 12 bytes
+        this.buffer = new ArrayBuffer(45);
+        this.setData(this.buffer);
+    }
+    setData(buffer) {
+        this.buffer = buffer;
+        this.spawnPoint = new Float32Array(this.buffer, 0, 3); // 12 bytes
+        this.NAME_CHAR_SIZE = new Uint8Array(this.buffer, 44, 1); // 1 bytes
+        if (this.NAME_CHAR_SIZE[0] === 0) {
+            this.name = new Uint8Array(this.buffer, 12, 32); // 32 bytes
+        }
+        else {
+            this.name = new Uint16Array(this.buffer, 12, 16);
+        }
     }
     getName() {
         let str = '';
@@ -15,7 +25,8 @@ class WorldData {
     setName(str) {
         for (let i = 0, j = str.length; i < j; i++) {
             if (str.charCodeAt(i) > 255) {
-                this.name = new Uint16Array(this.buffer, 0, 16);
+                this.NAME_CHAR_SIZE[0] = 1;
+                this.name = new Uint16Array(this.buffer, 12, 16);
                 break;
             }
         }
