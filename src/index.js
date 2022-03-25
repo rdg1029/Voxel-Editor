@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from './PointerLockControls';
 import { World } from './world';
 import { Palette } from './palette';
+import { worldData } from './world_data';
 import { CameraHelper } from 'three';
 
 const CHUNK_SIZE = 32;
@@ -411,13 +412,29 @@ function onWindowLoaded() {
     const world = new World(CHUNK_SIZE);
 
     // Set save & load button
+    const worldName = document.getElementById('world-name');
     const save = document.getElementById('save');
     const load = document.getElementById('load');
+    worldName.addEventListener('input', e => {
+        let maxLength = 32;
+        const content = e.target.value;
+        for (let i = 0, j = content.length; i < j; i++) {
+            if (content.charCodeAt(i) > 255) {
+                maxLength = 16;
+                break;
+            }
+        }
+        if (content.length > maxLength) {
+            e.target.value = content.substr(0, maxLength)
+        }
+    });
     save.addEventListener('click', () => {
+        if (worldName.value.length === 0) return;
+        worldData.setName(worldName.value);
         const zip = new JSZip();
-        const dirChunks = zip.folder('chunks');
+        zip.file('data', worldData.buffer);
         world.chunks.forEach((data, id) => {
-            dirChunks.file(id, data);
+            zip.folder('chunks').file(id, data);
         });
         zip.generateAsync({type:'blob'})
         .then(content => {
@@ -425,7 +442,7 @@ function onWindowLoaded() {
             const url = URL.createObjectURL(content);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'test.zip';
+            a.download = `${worldName.value}.zip`;
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
@@ -435,6 +452,10 @@ function onWindowLoaded() {
         const zip = new JSZip();
         zip.loadAsync(load.files[0]).then(() => {
             clearAllChunks();
+            zip.file('data').async('arraybuffer').then(buffer => {
+                worldData.setData(buffer);
+                worldName.value = worldData.getName();
+            });
             zip.folder('chunks').forEach((chunk, file) => {
                 file.async('uint8array').then(data => {
                     world.chunks.set(chunk, data);
