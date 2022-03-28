@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from './PointerLockControls';
 import { World } from './world';
 import { Palette } from './palette';
-import { worldData } from './world_data';
+import { worldData, getWorldData, setWorldData } from './world_data';
 import { CameraHelper } from 'three';
 
 const CHUNK_SIZE = 32;
@@ -430,11 +430,11 @@ function onWindowLoaded() {
     });
     save.addEventListener('click', () => {
         if (worldName.value.length === 0) return;
-        worldData.setName(worldName.value);
+        const data = getWorldData();
         const zip = new JSZip();
-        zip.file('data', worldData.buffer);
+        zip.file('data', data);
         world.chunks.forEach((data, id) => {
-            zip.folder('chunks').file(id, data);
+            zip.file(`chunks/${id}`, data);
         });
         zip.generateAsync({type:'blob'})
         .then(content => {
@@ -452,10 +452,12 @@ function onWindowLoaded() {
         const zip = new JSZip();
         zip.loadAsync(load.files[0]).then(() => {
             clearAllChunks();
-            zip.file('data').async('arraybuffer').then(buffer => {
-                worldData.setData(buffer);
-                worldName.value = worldData.getName();
-            });
+            const dataFile = zip.file('data');
+            if (dataFile) {
+                dataFile.async('uint8array').then(data => {
+                    setWorldData(data);
+                });
+            }
             zip.folder('chunks').forEach((chunk, file) => {
                 file.async('uint8array').then(data => {
                     world.chunks.set(chunk, data);
