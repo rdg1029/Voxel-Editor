@@ -456,6 +456,8 @@ function onWindowLoaded() {
             if (dataFile) {
                 dataFile.async('uint8array').then(data => {
                     setWorldData(data);
+                    const spawnPoint = worldData.spawnPoint;
+                    camera.position.set(spawnPoint[0], spawnPoint[1] + 13, spawnPoint[2]);
                 });
             }
             zip.folder('chunks').forEach((chunk, file) => {
@@ -469,6 +471,20 @@ function onWindowLoaded() {
                 });
             });
         });
+    });
+
+    // Editor
+    const setSpawn = document.getElementById('set-spawn');
+    const goToSpawn = document.getElementById('go-to-spawn');
+    setSpawn.addEventListener('click', () => {
+        if (!confirm('현재 위치를 맵의 스폰 위치로 설정하시겠습니까?')) return;
+        worldData.spawnPoint[0] = camera.position.x;
+        worldData.spawnPoint[1] = box.min.y;
+        worldData.spawnPoint[2] = camera.position.z;
+    });
+    goToSpawn.addEventListener('click', () => {
+        const spawnPoint = worldData.spawnPoint;
+        camera.position.set(spawnPoint[0], spawnPoint[1] + 13, spawnPoint[2]);
     });
 
     // Set voxel & block button

@@ -27,6 +27,10 @@
         <button id="save">save</button><br>
         <input id="load" type="file" accept=".zip">
     </div>
+    <div id="editor">
+        <button id="set-spawn">Set spawn</button>
+        <button id="go-to-spawn">Go to spawn</button>
+    </div>
     <div id="size">
         <button id="voxel">voxel</button>
         <button id="block">block</button>
@@ -53,6 +57,8 @@
     }
     #palette {
         position: absolute;
+        left: 0;
+        top: 0;
         margin-top: 1em;
         z-index: 1;
     }
@@ -86,6 +92,12 @@
         position: absolute;
         right: 0;
         top: 0;
+        z-index: 1;
+    }
+    #editor {
+        position: absolute;
+        left: 0;
+        bottom: 0;
         z-index: 1;
     }
     #size {
