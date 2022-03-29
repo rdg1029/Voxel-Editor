@@ -15,6 +15,11 @@ const EPSILON = 0.001;
 
 let isVoxel = true;
 
+window.addEventListener('beforeunload', e => {
+    e.preventDefault();
+    e.returnValue = '';
+});
+
 function onWindowLoaded() {
     const clock = new THREE.Clock();
     const scene = new THREE.Scene();
