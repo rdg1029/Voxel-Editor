@@ -429,6 +429,10 @@ function onWindowLoaded() {
         }
     });
     save.addEventListener('click', () => {
+        if (worldData.spawnPoint[0] === undefined) {
+            alert('맵의 스폰 위치를 설정해주세요!');
+            return;
+        }
         if (worldName.value.length === 0) return;
         const data = getWorldData();
         const zip = new JSZip();
@@ -483,6 +487,10 @@ function onWindowLoaded() {
         worldData.spawnPoint[2] = camera.position.z;
     });
     goToSpawn.addEventListener('click', () => {
+        if (worldData.spawnPoint[0] === undefined) {
+            alert('스폰 위치가 설정되지 않았습니다!');
+            return;
+        }
         const spawnPoint = worldData.spawnPoint;
         camera.position.set(spawnPoint[0], spawnPoint[1] + 13, spawnPoint[2]);
     });

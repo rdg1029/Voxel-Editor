@@ -1,5 +1,5 @@
 let worldData = {
-    spawnPoint: [0, 0, 0],
+    spawnPoint: [undefined, undefined, undefined],
 };
 
 const CONVERSION = 128;
