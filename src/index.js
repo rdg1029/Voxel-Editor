@@ -50,6 +50,12 @@ function onWindowLoaded() {
     const crossHairPos = new THREE.Vector2(0, 0);
     const raycaster = new THREE.Raycaster();
 
+    //Define spawn marker
+    const spawnMarkerMap = new THREE.TextureLoader().load('./person.png');
+    const spawnMarkerMaterial = new THREE.SpriteMaterial({map: spawnMarkerMap});
+    const spawnMarker = new THREE.Sprite(spawnMarkerMaterial);
+    spawnMarker.scale.set(18, 18, 1);
+
     const neighborOffsets = [
         [0, 0, 0], // 자신
         [-1, 0, 0], // 왼쪽
@@ -345,6 +351,12 @@ function onWindowLoaded() {
         camera.position.add(displacement);
         updateBox();
     }
+    function updateSpawnMarker() {
+        spawnMarker.position.fromArray(worldData.spawnPoint);
+        spawnMarker.position.y += 7;
+        scene.add(spawnMarker);
+    }
+
     window.addEventListener('keydown', e => {
         switch(e.code) {
             case 'Digit1':
@@ -462,6 +474,7 @@ function onWindowLoaded() {
                     setWorldData(data);
                     const spawnPoint = worldData.spawnPoint;
                     camera.position.set(spawnPoint[0], spawnPoint[1] + 13, spawnPoint[2]);
+                    updateSpawnMarker();
                 });
             }
             zip.folder('chunks').forEach((chunk, file) => {
@@ -485,6 +498,7 @@ function onWindowLoaded() {
         worldData.spawnPoint[0] = camera.position.x;
         worldData.spawnPoint[1] = box.min.y;
         worldData.spawnPoint[2] = camera.position.z;
+        updateSpawnMarker();
     });
     goToSpawn.addEventListener('click', () => {
         if (worldData.spawnPoint[0] === undefined) {

@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "three": "^0.138.0",
+    "three": "^0.139.0",
     "webpack": "^5.65.0"
   },
   "devDependencies": {
