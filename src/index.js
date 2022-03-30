@@ -4,7 +4,8 @@ import { PointerLockControls } from './PointerLockControls';
 import { World } from './world';
 import { Palette } from './palette';
 import { worldData, getWorldData, setWorldData } from './world_data';
-import { CameraHelper } from 'three';
+
+const JSZip = require('jszip');
 
 const CHUNK_SIZE = 32;
 const BLOCK_SIZE = 8;
