@@ -1,6 +1,6 @@
 import { voxelData } from './voxel_data';
 
-const paletteListData = new Uint8Array([60, 29, 31, 36, 42, 55, 1, 8]);
+const paletteListData = new Uint8Array([1, 23, 5, 7, 9, 14, 19, 29]);
 
 class Palette {
     constructor() {
