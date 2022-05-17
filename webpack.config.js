@@ -1,4 +1,4 @@
-import path from "path";
+const path = require('path');
 
 module.exports = {
     mode: 'development',
@@ -11,7 +11,13 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/env', '@babel/typescript']
+                        presets: [
+                            '@babel/env',
+                            '@babel/typescript',
+                        ],
+                        plugins: [
+                            '@babel/transform-runtime',
+                        ],
                     },
                 },
             },
@@ -19,7 +25,7 @@ module.exports = {
     },
     resolve: {
         extensions: [
-            'tsx', 'ts', 'js',
+            '.tsx', '.ts', '.js',
         ],
     },
     output: {
