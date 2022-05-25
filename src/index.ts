@@ -43,6 +43,7 @@ window.onload = () => {
     // Define controls
     const controls = new PointerControls(self, canvas, self.peers);
     const moveKey = controls.keys.move;
+    const uiKey = controls.keys.ui;
     const movements = controls.movements;
     moveKey.set('KeyW', (isDown: boolean) => movements.set('forward', isDown));
     moveKey.set('ArrowUp', (isDown: boolean) => movements.set('forward', isDown));
@@ -56,6 +57,15 @@ window.onload = () => {
     moveKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
 
     const palette = new Palette();
+    uiKey.set('Digit1', () => palette.select(0));
+    uiKey.set('Digit2', () => palette.select(1));
+    uiKey.set('Digit3', () => palette.select(2));
+    uiKey.set('Digit4', () => palette.select(3));
+    uiKey.set('Digit5', () => palette.select(4));
+    uiKey.set('Digit6', () => palette.select(5));
+    uiKey.set('Digit7', () => palette.select(6));
+    uiKey.set('Digit8', () => palette.select(7));
+    uiKey.set('KeyX', () => palette.select(-1));
 
     canvas.addEventListener('click', () => {
         controls.lock();
