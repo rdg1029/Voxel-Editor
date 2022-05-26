@@ -16,7 +16,7 @@ engine.tickUpdate = false;
 const world = engine.world;
 const self = world.self;
 
-// Define self state
+// Init self state
 self.state.pos[0] = CHUNK_SIZE >> 1;
 self.state.pos[1] = 0;
 self.state.pos[2] = CHUNK_SIZE >> 1;
@@ -70,6 +70,7 @@ window.onload = () => {
     canvas.addEventListener('click', () => {
         controls.lock();
     });
+
     engine.setControls(controls);
     engine.start();
 }
