@@ -4,7 +4,6 @@ import PointerControls from "../Engine/controls/PointerControls"
 import Palette from './palette';
 
 const CHUNK_SIZE = 32;
-const BLOCK_SIZE = 8;
 const BLOCK_SIZE_BIT = 3;
 
 window.addEventListener('beforeunload', e => {
@@ -157,6 +156,16 @@ window.onload = () => {
 
     canvas.addEventListener('click', () => {
         controls.lock();
+    });
+
+    controls.addEventListener('lock', () => {
+        window.addEventListener('pointerdown', placeVoxel);
+        controls.addEventListener('change', selectVoxel);
+        palette.colorBoard.style.display = 'none';
+    });
+    controls.addEventListener('unlock', () => {
+        window.removeEventListener('pointerdown', placeVoxel);
+        controls.removeEventListener('change', selectVoxel);
     });
 
     engine.setControls(controls);
