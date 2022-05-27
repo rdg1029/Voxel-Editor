@@ -1,13 +1,15 @@
 const paletteListData = new Uint8Array([1, 23, 5, 7, 9, 14, 19, 29]);
 
-class Palette {
+export default class Palette {
     public selected: number;
+    public isVoxel: boolean;
     public list: HTMLCollectionOf<HTMLSpanElement>;
     public eraser: HTMLSpanElement;
     public colorBoard: HTMLDivElement;
 
     constructor(paletteColors: Array<string>) {
         this.selected = 0;
+        this.isVoxel = true;
         this.list = document.getElementsByClassName('palette-list') as HTMLCollectionOf<HTMLSpanElement>;
         this.eraser = document.getElementById('eraser') as HTMLSpanElement;
         this.colorBoard = document.getElementById('color-board') as HTMLDivElement;        
@@ -65,5 +67,3 @@ class Palette {
         return paletteListData[this.selected];
     }
 }
-
-export {Palette};
