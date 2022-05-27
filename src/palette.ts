@@ -1,17 +1,20 @@
-import { voxelData } from './voxel_data';
-
 const paletteListData = new Uint8Array([1, 23, 5, 7, 9, 14, 19, 29]);
 
 class Palette {
-    constructor() {
+    public selected: number;
+    public list: HTMLCollectionOf<HTMLSpanElement>;
+    public eraser: HTMLSpanElement;
+    public colorBoard: HTMLDivElement;
+
+    constructor(paletteColors: Array<string>) {
         this.selected = 0;
-        this.list = document.getElementsByClassName('palette-list');
-        this.eraser = document.getElementById('eraser');
-        this.colorBoard = document.getElementById('color-board');        
+        this.list = document.getElementsByClassName('palette-list') as HTMLCollectionOf<HTMLSpanElement>;
+        this.eraser = document.getElementById('eraser') as HTMLSpanElement;
+        this.colorBoard = document.getElementById('color-board') as HTMLDivElement;        
         this.select(this.selected);
 
         for (let i = 0, j = this.list.length; i < j; i++) {
-            this.list[i].style.backgroundColor = voxelData[paletteListData[i]];
+            this.list[i].style.backgroundColor = paletteColors[paletteListData[i]];
             this.list[i].addEventListener('click', e => {
                 this.select(i);
                 this.colorBoard.style.display = 'block';
@@ -20,10 +23,10 @@ class Palette {
 
         for (let i = 1; i < 65; i++) {
             const color = document.createElement('span');
-            color.style.backgroundColor = voxelData[i];
+            color.style.backgroundColor = paletteColors[i];
             color.addEventListener('click', e => {
                 paletteListData[this.selected] = i;
-                this.list[this.selected].style.backgroundColor = voxelData[i];
+                this.list[this.selected].style.backgroundColor = paletteColors[i];
                 this.colorBoard.style.display = 'none';
             });
             this.colorBoard.appendChild(color);
@@ -32,7 +35,7 @@ class Palette {
             }
         }
     }
-    select(index) {
+    select(index: number) {
         const {list} = this;
         // index : -1 => eraser / 0 ~ 7 -> list
         if (index < -1 || index > 7) {
