@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import Engine from "../Engine";
 import PointerControls from "../Engine/controls/PointerControls"
-import { Palette } from './palette';
+import Palette from './palette';
 
 const CHUNK_SIZE = 32;
 
@@ -56,7 +56,7 @@ window.onload = () => {
     moveKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
     moveKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
 
-    const palette = new Palette();
+    const palette = new Palette(world.data.paletteColors);
     uiKey.set('Digit1', () => palette.select(0));
     uiKey.set('Digit2', () => palette.select(1));
     uiKey.set('Digit3', () => palette.select(2));
@@ -66,6 +66,13 @@ window.onload = () => {
     uiKey.set('Digit7', () => palette.select(6));
     uiKey.set('Digit8', () => palette.select(7));
     uiKey.set('KeyX', () => palette.select(-1));
+
+    function getRaycasterIntersect() {
+        raycaster.setFromCamera(crossHairPos, self.camera);
+        const worldMapMeshs = world.map.meshs;
+        const objects = worldMapMeshs.size === 0 ? [gridHelper] : Array.from(worldMapMeshs.values());
+        return raycaster.intersectObjects(objects, false)[0];
+    }
 
     canvas.addEventListener('click', () => {
         controls.lock();
