@@ -159,12 +159,12 @@ window.onload = () => {
     });
 
     controls.addEventListener('lock', () => {
-        window.addEventListener('pointerdown', placeVoxel);
+        canvas.addEventListener('pointerdown', placeVoxel);
         controls.addEventListener('change', selectVoxel);
         palette.colorBoard.style.display = 'none';
     });
     controls.addEventListener('unlock', () => {
-        window.removeEventListener('pointerdown', placeVoxel);
+        canvas.removeEventListener('pointerdown', placeVoxel);
         controls.removeEventListener('change', selectVoxel);
     });
 
