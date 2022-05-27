@@ -4,6 +4,8 @@ import PointerControls from "../Engine/controls/PointerControls"
 import Palette from './palette';
 
 const CHUNK_SIZE = 32;
+const BLOCK_SIZE = 8;
+const BLOCK_SIZE_BIT = 3;
 
 window.addEventListener('beforeunload', e => {
     e.preventDefault();
@@ -72,6 +74,40 @@ window.onload = () => {
         const worldMapMeshs = world.map.meshs;
         const objects = worldMapMeshs.size === 0 ? [gridHelper] : Array.from(worldMapMeshs.values());
         return raycaster.intersectObjects(objects, false)[0];
+    }
+
+    function getRaycasterSelectPos(intersect: THREE.Intersection) {
+        const selectPos = intersect.point;
+        if (world.map.meshs.size === 0) {
+            if (palette.isVoxel) {
+                selectPos.floor();
+            }
+            else {
+                selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+            }
+            return {selectPos};
+        }
+        const normal = intersect.face.normal;
+        Object.values(normal).forEach((n, idx) => {
+            if (n !== 0) {
+                const pos = selectPos.getComponent(idx);
+                selectPos.setComponent(idx, Math.round(pos));
+                if (palette.isVoxel) {
+                    selectPos.floor();
+                }
+                else {
+                    selectPos.x = (selectPos.x >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                    selectPos.y = (selectPos.y >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                    selectPos.z = (selectPos.z >> BLOCK_SIZE_BIT) << BLOCK_SIZE_BIT;
+                    normal.setComponent(idx, n << BLOCK_SIZE_BIT);
+                }
+                if (n < 0) selectPos.add(normal);
+                return;
+            }
+        });
+        return {selectPos, normal};
     }
 
     canvas.addEventListener('click', () => {
