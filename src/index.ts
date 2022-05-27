@@ -110,6 +110,34 @@ window.onload = () => {
         return {selectPos, normal};
     }
 
+    function selectVoxel() {
+        const intersect = getRaycasterIntersect();
+        if (intersect) {
+            if (world.map.meshs.size === 0) {
+                const {selectPos} = getRaycasterSelectPos(intersect);
+                if (palette.isVoxel) {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(.5));
+                }
+                else {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(4));
+                }
+            }
+            else {
+                const {selectPos, normal} = getRaycasterSelectPos(intersect);
+                if (palette.isVoxel) {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(.5).sub(normal));
+                }
+                else {
+                    voxelHelperMesh.position.copy(selectPos.addScalar(4).sub(normal));
+                }
+            }
+            world.add(voxelHelperMesh);
+        }
+        else {
+            world.remove(voxelHelperMesh);
+        }
+    }
+
     canvas.addEventListener('click', () => {
         controls.lock();
     });
