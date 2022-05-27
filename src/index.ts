@@ -138,6 +138,23 @@ window.onload = () => {
         }
     }
 
+    function placeVoxel() {
+        const intersect = getRaycasterIntersect();
+        if (intersect) {
+            const select = getRaycasterSelectPos(intersect);
+            if (palette.selected === -1 && world.map.meshs.size !== 0) {
+                select.selectPos.sub(select.normal);
+            }
+            if (palette.isVoxel) {
+                world.map.setVoxel(select.selectPos.x, select.selectPos.y, select.selectPos.z, palette.getSelectedColorCode());
+            }
+            else {
+                world.map.setBlock(select.selectPos.x, select.selectPos.y, select.selectPos.z, palette.getSelectedColorCode());
+            }
+            world.map.updateVoxelGeometry(select.selectPos.x, select.selectPos.y, select.selectPos.z);
+        }
+    }
+
     canvas.addEventListener('click', () => {
         controls.lock();
     });
