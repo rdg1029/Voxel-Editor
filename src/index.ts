@@ -168,6 +168,24 @@ window.onload = () => {
         controls.removeEventListener('change', selectVoxel);
     });
 
+    const worldName = document.getElementById('world-name') as HTMLInputElement;
+    const save = document.getElementById('save') as HTMLButtonElement;
+    const load = document.getElementById('load') as HTMLButtonElement;
+
+    worldName.addEventListener('input', () => {
+        let maxLength = 32;
+        const content = worldName.value;
+        for (let i = 0, j = content.length; i < j; i++) {
+            if (content.charCodeAt(i) > 255) {
+                maxLength = 16;
+                break;
+            }
+        }
+        if (content.length > maxLength) {
+            worldName.value = content.substr(0, maxLength)
+        }
+    });
+
     engine.setControls(controls);
     engine.start();
 }
