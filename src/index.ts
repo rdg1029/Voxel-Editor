@@ -170,7 +170,7 @@ window.onload = () => {
 
     const worldName = document.getElementById('world-name') as HTMLInputElement;
     const save = document.getElementById('save') as HTMLButtonElement;
-    const load = document.getElementById('load') as HTMLButtonElement;
+    const load = document.getElementById('load') as HTMLInputElement;
 
     worldName.addEventListener('input', () => {
         let maxLength = 32;
@@ -187,6 +187,7 @@ window.onload = () => {
     });
 
     save.addEventListener('click', () => world.save(worldName.value));
+    load.addEventListener('input', () => world.load(load.files[0]));
 
     engine.setControls(controls);
     engine.start();
