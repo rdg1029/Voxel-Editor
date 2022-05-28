@@ -186,6 +186,8 @@ window.onload = () => {
         }
     });
 
+    save.addEventListener('click', () => world.save(worldName.value));
+
     engine.setControls(controls);
     engine.start();
 }
