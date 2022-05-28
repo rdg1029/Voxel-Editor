@@ -187,24 +187,34 @@ window.onload = () => {
     });
 
     save.addEventListener('click', () => world.save(worldName.value));
-    load.addEventListener('input', () => world.load(load.files[0]));
+    load.addEventListener('input', () => {
+        world.load(load.files[0]).then(() => {
+        const spawnPoint = world.data.spawnPoint;
+        const selfPos = self.state.pos;
+        selfPos[0] = spawnPoint[0];
+        selfPos[1] = spawnPoint[1];
+        selfPos[2] = spawnPoint[2];
+        });
+    });
 
     // Editor
     const setSpawn = document.getElementById('set-spawn') as HTMLButtonElement;
     const goToSpawn = document.getElementById('go-to-spawn') as HTMLButtonElement;
-    const spawnPoint = world.data.spawnPoint;
-    const selfPos = self.state.pos;
     setSpawn.addEventListener('click', () => {
         if (!confirm('현재 위치를 맵의 스폰 위치로 설정하시겠습니까?')) return;
+        const spawnPoint = world.data.spawnPoint;
+        const selfPos = self.state.pos;
         spawnPoint[0] = selfPos[0];
         spawnPoint[1] = selfPos[1];
         spawnPoint[2] = selfPos[2];
     });
     goToSpawn.addEventListener('click', () => {
+        const spawnPoint = world.data.spawnPoint;
         if (spawnPoint[0] === undefined) {
             alert('스폰 위치가 설정되지 않았습니다!');
             return;
         }
+        const selfPos = self.state.pos;
         selfPos[0] = spawnPoint[0];
         selfPos[1] = spawnPoint[1];
         selfPos[2] = spawnPoint[2];
