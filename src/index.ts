@@ -210,6 +210,20 @@ window.onload = () => {
         selfPos[2] = spawnPoint[2];
     });
 
+    // Set voxel & block button
+    const voxelButton = document.getElementById('voxel') as HTMLButtonElement;
+    const blockButton = document.getElementById('block') as HTMLButtonElement;
+    voxelButton.addEventListener('click', () => {
+        if (palette.isVoxel) return;
+        palette.isVoxel = true;
+        voxelHelperGeometry.scale(1/8, 1/8, 1/8);
+    });
+    blockButton.addEventListener('click', () => {
+        if (!palette.isVoxel) return;
+        palette.isVoxel = false;
+        voxelHelperGeometry.scale(8, 8, 8);
+    });
+
     engine.setControls(controls);
     engine.start();
 }
